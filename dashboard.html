@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LS25 Farm-Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--soil:#2b2118;--field:#4f6b3a;--barn:#8c3b2a;--hay:#e0b43a;--paper:#f3efe4;--ink:#241c14}
+body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(bg.jpg) center/cover fixed;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh}
+.topbar{background:var(--soil);color:#f3efe4;border-bottom:4px solid var(--hay)}
+.topbar .btn-outline-light{--bs-btn-border-color:#8a7a66}
+.brand{font-weight:700;letter-spacing:.02em}
+.login-wrap{max-width:380px;margin:12vh auto 0}
+.login-card{background:#fff;border-radius:6px;border-top:6px solid var(--hay);box-shadow:0 6px 24px rgba(43,33,24,.18)}
+.farm-btn{display:block;width:100%;text-align:left;border:0;color:#fff;padding:2rem 1.75rem;border-radius:6px;min-height:200px;transition:transform .15s}
+.farm-btn:hover{transform:translateY(-3px)}
+.farm-btn:focus-visible,.btn:focus-visible,.nav-link:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.farm-haupt{background:var(--field)}
+.farm-neben{background:var(--barn)}
+.farm-btn h2{font-size:2rem;font-weight:700}
+.nav-pills .nav-link{color:var(--ink);border-radius:4px;font-weight:600}
+.nav-pills .nav-link.active{background:var(--soil);color:var(--hay)}
+.nav-pills .badge{background:#d9d1bd!important;color:var(--ink)}
+.panel{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1)}
+.table th{font-weight:600;color:#6b5d4d;border-bottom-color:var(--soil)}
+  .sortbtn{color:#6b5d4d}
+.plate{font-family:Consolas,monospace;background:#f6f1e0;border:2px solid var(--soil);border-radius:4px;padding:.1rem .5rem;white-space:nowrap}
+.btn-hay{background:var(--hay);border-color:var(--hay);color:var(--ink);font-weight:600}
+.btn-hay:hover{background:#c9a02e;border-color:#c9a02e}
+</style>
+<link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Fahrzeug-Dialog -->
+<div class="modal fade" id="vehModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down"><form class="modal-content" onsubmit="saveVehicle(event)">
+  <div class="modal-header"><h5 class="modal-title" id="vehTitle">Fahrzeug</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div>
+  <div class="modal-body vstack gap-3">
+    <input type="hidden" id="vId">
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label" for="vCat">Kategorie</label><select class="form-select" id="vCat"></select></div>
+      <div class="col-6"><label class="form-label" for="vFarm">Farm</label><select class="form-select" id="vFarm"></select></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label" for="vMarke">Marke</label><input class="form-control" id="vMarke" required></div>
+      <div class="col-6"><label class="form-label" for="vModell">Modell</label><input class="form-control" id="vModell" required></div>
+    </div>
+    <div><label class="form-label" for="vKz">Kennzeichen</label><input class="form-control" id="vKz" required></div>
+    <div><label class="form-label" for="vGebiet">Einsatzgebiet</label><input class="form-control" id="vGebiet" placeholder="z. B. Ackerbau, Transport, Grünland"></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Abbrechen</button><button class="btn btn-hay">Speichern</button></div>
+</form></div></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="version.js"></script>
+<script>
+const CATS=['Traktor','LKW','PKW','Firmenwagen','Transporter/Van','Anhänger','LKW-Anhänger','Erntemaschine','Mähdrescher/Häcksler','Teleskoplader','Gabelstapler','Sämaschine','Grubber','Sonstiges'];
+const FARMS={haupt:'Hauptfarm',neben:'Nebenfarm'};
+
+let data;
+const save=()=>store.save(data);
+let S={user:null,farm:['haupt','neben'].includes(location.hash.slice(1))?location.hash.slice(1):null,cat:'Alle',q:'',sort:'marke',dir:1};
+function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isChef=()=>S.user&&S.user.role==='chef';
+/* Rechte: Mitarbeiter dürfen hinzufügen und bearbeiten, nur der Chef darf löschen */
+const canDelete=()=>can('vehicles','delete');
+
+function render(){
+  const a=$('app');
+  if(!S.user) return;
+  if(!S.farm) return a.innerHTML=farmView();
+  a.innerHTML=fleetView();
+}
+
+function farmView(){return `
+${topbar('Farm wählen')}
+<main class="container py-5" style="max-width:900px">
+  <h1 class="h3 mb-4">Welche Farm möchtest du ansehen?</h1>
+  <div class="row g-4">
+    ${Object.entries(FARMS).map(([k,n])=>`
+    <div class="col-md-6"><button class="farm-btn farm-${k}" onclick="openFarm('${k}')">
+      <h2>${n}</h2>
+      <p class="mb-0">${data.vehicles.filter(v=>v.farm===k).length} Fahrzeuge im Fuhrpark</p>
+    </button></div>`).join('')}
+  </div>
+</main>`}
+
+function fleetView(){
+  const all=data.vehicles.filter(v=>v.farm===S.farm);
+  const tabs=['Alle',...CATS].map(c=>{
+    const n=c==='Alle'?all.length:all.filter(v=>v.cat===c).length;
+    return `<li class="nav-item"><button class="nav-link ${S.cat===c?'active':''}" onclick="setCat('${c}')">${c} <span class="badge rounded-pill ms-1">${n}</span></button></li>`}).join('');
+  return `
+${topbar(FARMS[S.farm])}
+<main class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Fuhrpark ${FARMS[S.farm]}</h1>
+    <div class="d-flex gap-2 flex-grow-1 flex-sm-grow-0 fleet-actions">
+      <input class="form-control" type="search" placeholder="Suchen …" aria-label="Fahrzeuge suchen" value="${esc(S.q)}" oninput="S.q=this.value;updateTable()">
+      ${can('vehicles','add')?`<button class="btn btn-hay text-nowrap" onclick="newVehicle()">Fahrzeug hinzufügen</button>`:''}
+    </div>
+  </div>
+  <ul class="nav nav-pills flex-wrap gap-1 mb-3">${tabs}</ul>
+  <div class="panel p-3" id="tableBox">${tableHtml()}</div>
+</main>`}
+
+const COLS=[['marke','Marke'],['modell','Modell'],['kz','Kennzeichen'],['gebiet','Einsatzgebiet']];
+function tableHtml(){
+  const q=S.q.trim().toLowerCase();
+  const cols=S.cat==='Alle'?[['cat','Kategorie'],...COLS]:COLS;
+  if(!cols.some(c=>c[0]===S.sort))S.sort='marke';
+  const list=data.vehicles
+    .filter(v=>v.farm===S.farm&&(S.cat==='Alle'||v.cat===S.cat)&&(!q||[v.cat,v.marke,v.modell,v.kz,v.gebiet].join(' ').toLowerCase().includes(q)))
+    .sort((a,b)=>String(a[S.sort]).localeCompare(String(b[S.sort]),'de',{numeric:true,sensitivity:'base'})*S.dir);
+  if(!list.length) return `<p class="text-secondary text-center py-4 mb-0">${q
+    ?'Keine Fahrzeuge gefunden. Prüfe die Suche oder wähle einen anderen Tab.'
+    :'Noch keine Fahrzeuge in dieser Ansicht. Füge mit „Fahrzeug hinzufügen“ das erste hinzu.'}</p>`;
+  const th=cols.map(([k,n])=>`<th aria-sort="${S.sort===k?(S.dir>0?'ascending':'descending'):'none'}"><button class="btn btn-link p-0 text-decoration-none fw-semibold sortbtn" onclick="setSort('${k}')">${n}${S.sort===k?(S.dir>0?' ▲':' ▼'):''}</button></th>`).join('');
+  const rows=list.map(v=>`<tr>
+    ${S.cat==='Alle'?`<td data-label="Kategorie">${esc(v.cat)}</td>`:''}
+    <td data-label="Marke">${esc(v.marke)}</td><td data-label="Modell">${esc(v.modell)}</td><td data-label="Kennzeichen"><span class="plate">${esc(v.kz)}</span></td>
+    <td data-label="Einsatzgebiet">${esc(v.gebiet)}</td><td class="text-end text-nowrap" data-label="">
+      ${can('vehicles','edit')?`<button class="btn btn-sm btn-outline-dark" onclick="editVehicle(${v.id})">Bearbeiten</button>`:''}
+      ${canDelete()?`<button class="btn btn-sm btn-outline-danger" onclick="delVehicle(${v.id})">Löschen</button>`:''}</td></tr>`).join('');
+  return `<div class="table-responsive"><table class="table align-middle mb-0 stack"><thead><tr>${th}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function updateTable(){$('tableBox').innerHTML=tableHtml()}
+function setSort(k){if(S.sort===k)S.dir*=-1;else{S.sort=k;S.dir=1}updateTable()}
+
+function topbar(where){return `
+<nav class="topbar"><div class="container d-flex flex-wrap align-items-center gap-2 py-2">
+  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· ${esc(where)}</span></span>
+  <span class="me-auto ms-3 d-flex gap-1 navl">${navLinks('fuhrpark')}</span>
+  ${S.farm?`<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat='Alle';render()">Farm wechseln</button>`:''}
+  <span class="small opacity-75">${esc(dispName(S.user.name))} (${S.user.role})</span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
+  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
+</div></nav>`}
+
+/* Aktionen */
+function openFarm(k){S.farm=k;S.cat='Alle';render()}
+function setCat(c){S.cat=c;render()}
+
+const vm=()=>bootstrap.Modal.getOrCreateInstance($('vehModal'));
+function fillCats(sel){$('vCat').innerHTML=CATS.map(c=>`<option ${c===sel?'selected':''}>${c}</option>`).join('')}
+function fillFarm(sel){$('vFarm').innerHTML=Object.entries(FARMS).map(([k,n])=>`<option value="${k}" ${k===sel?'selected':''}>${n}</option>`).join('')}
+function newVehicle(){
+  $('vehTitle').textContent='Fahrzeug hinzufügen';$('vId').value='';
+  ['vMarke','vModell','vKz','vGebiet'].forEach(i=>$(i).value='');
+  fillCats(S.cat==='Alle'?CATS[0]:S.cat);fillFarm(S.farm);vm().show()}
+function editVehicle(id){const v=data.vehicles.find(x=>x.id===id);
+  $('vehTitle').textContent='Fahrzeug bearbeiten';$('vId').value=id;
+  $('vMarke').value=v.marke;$('vModell').value=v.modell;$('vKz').value=v.kz;$('vGebiet').value=v.gebiet;
+  fillCats(v.cat);fillFarm(v.farm);vm().show()}
+function saveVehicle(e){e.preventDefault();
+  const o={cat:$('vCat').value,farm:$('vFarm').value,marke:$('vMarke').value.trim(),modell:$('vModell').value.trim(),kz:$('vKz').value.trim(),gebiet:$('vGebiet').value.trim()};
+  const id=Number($('vId').value);
+  if(id)Object.assign(data.vehicles.find(x=>x.id===id),o);
+  else data.vehicles.push({id:Date.now(),farm:S.farm,...o});
+  save();vm().hide();render()}
+function delVehicle(id){
+  if(!canDelete())return;
+  const v=data.vehicles.find(x=>x.id===id);
+  if(confirm(`${v.marke} ${v.modell} (${v.kz}) wirklich löschen?`)){data.vehicles=data.vehicles.filter(x=>x.id!==id);save();render()}}
+
+
+init().then(()=>{data=DATA;S.user=ME;
+  if(!can('vehicles','view')){$('app').innerHTML=topbar('Fuhrpark')+'<main class="container py-5"><p class="text-secondary">Du hast keinen Zugriff auf den Fuhrpark.</p></main>';return}
+  render()});
+</script>
+</body>
+</html>

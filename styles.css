@@ -1,0 +1,54 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+
+body {
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: url(bg.jpg) no-repeat center / cover;
+}
+
+.wrapper {
+  width: 420px; max-width: calc(100% - 32px);
+  padding: 30px 40px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, .2);
+  backdrop-filter: blur(9px);
+  color: #fff;
+  border-radius: 12px;
+}
+
+.wrapper h1 { font-size: 32px; text-align: center; }
+.subtitle { text-align: center; font-size: 14px; opacity: .85; margin: 4px 0 10px; }
+.error {
+  background: rgba(140, 59, 42, .85); border-radius: 8px;
+  padding: 8px 14px; font-size: 14px; margin: 10px 0 0;
+}
+
+.input-box { position: relative; width: 100%; height: 50px; margin: 20px 0; }
+.input-box input {
+  width: 100%; height: 100%; background: transparent; outline: none;
+  border: 2px solid rgba(255, 255, 255, .2); border-radius: 40px;
+  font-size: 16px; color: #fff; padding: 0 45px 0 20px;
+}
+.input-box input:focus-visible { border-color: #fff; }
+.input-box input::placeholder { color: #fff; }
+.input-box i { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 20px; }
+
+.remember-forgot { font-size: 14.5px; margin: -5px 0 15px; }
+.remember-forgot label { display: flex; align-items: center; }
+.remember-forgot input { accent-color: #fff; margin-right: 5px; }
+
+.btn {
+  width: 100%; height: 45px; background: #fff; border: none; border-radius: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1); cursor: pointer;
+  font-size: 16px; color: #333; font-weight: 600;
+}
+.btn:focus-visible { outline: 3px solid #e0b43a; outline-offset: 2px; }
+.hint { font-size: 13px; text-align: center; opacity: .75; margin-top: 15px; }
+
+@media (max-width: 480px) {
+  .wrapper { padding: 24px 20px; }
+  .wrapper h1 { font-size: 28px; }
+}
+
+.app-version { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }

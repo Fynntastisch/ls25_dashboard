@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LS25 Protokoll</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--soil:#2b2118;--field:#4f6b3a;--barn:#8c3b2a;--hay:#e0b43a;--paper:#f3efe4;--ink:#241c14}
+body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(bg.jpg) center/cover fixed;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh}
+.topbar{background:var(--soil);color:#f3efe4;border-bottom:4px solid var(--hay)}
+.topbar .btn-outline-light{--bs-btn-border-color:#8a7a66}
+.brand{font-weight:700}
+.btn-hay{background:var(--hay);border-color:var(--hay);color:var(--ink);font-weight:600}
+.btn-hay:hover{background:#c9a02e;border-color:#c9a02e}
+.btn:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.panel{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1)}
+.table th{font-weight:600;color:#6b5d4d;border-bottom-color:var(--soil)}
+.role{border-radius:4px;padding:.1rem .5rem;font-size:.85rem;font-weight:600;background:#efe9d8}
+.role.chef{background:var(--soil);color:var(--hay)}
+.role.dev{background:var(--field);color:#fff}
+.role.test{background:var(--barn);color:#fff}
+.post{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1);padding:1.25rem 1.5rem;margin-bottom:1rem}
+.post h2{font-size:1.35rem}
+.post .body{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+<link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<nav class="topbar"><div class="container py-2 d-flex flex-wrap align-items-center gap-2">
+  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· Protokoll</span></span>
+  <span class="me-auto ms-3 d-flex gap-1 navl" id="navLinks"></span>
+  <span class="small opacity-75" id="who"></span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
+  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
+</div></nav>
+
+<main class="container py-4">
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
+    <h1 class="h3 me-auto mb-0">Protokoll</h1>
+    <input class="form-control w-auto" type="search" placeholder="Suchen …" aria-label="Protokoll durchsuchen" oninput="render()" id="fQ">
+    <select class="form-select w-auto" id="fUser" aria-label="Benutzer filtern" onchange="render()"></select>
+    <select class="form-select w-auto" id="fArea" aria-label="Bereich filtern" onchange="render()"></select>
+  </div>
+  <div class="panel p-3" style="background:#fff;border-radius:6px"><div id="logBox"></div>
+    <div class="text-center mt-3"><button class="btn btn-outline-dark" id="bMore" onclick="load()" hidden>Ältere Einträge laden</button></div></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="nav.js"></script>
+<script src="version.js"></script>
+<script>
+const PAGE=300;
+let rows=[],offset=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=d=>new Date(d).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'medium'});
+function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
+
+async function load(){
+  const {data:r,error}=await sb.from('logs').select('*').order('at',{ascending:false}).range(offset,offset+PAGE-1);
+  if(error){$('logBox').innerHTML=`<p class="text-danger mb-0">Das Protokoll konnte nicht geladen werden: ${esc(error.message)}. Wurde supabase-update-4.sql in Supabase ausgeführt?</p>`;return}
+  rows=rows.concat(r);offset+=r.length;$('bMore').hidden=r.length<PAGE;
+  fillFilters();render();
+}
+function fillFilters(){
+  const keep=(id,all,vals)=>{const cur=$(id).value;$(id).innerHTML=`<option value="">${all}</option>`+vals.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')};
+  keep('fUser','Alle Benutzer',[...new Set(rows.map(r=>r.user_name))].sort());
+  keep('fArea','Alle Bereiche',[...new Set(rows.map(r=>r.area))].sort());
+}
+function render(){
+  const u=$('fUser').value,a=$('fArea').value,q=$('fQ').value.trim().toLowerCase();
+  const list=rows.filter(r=>(!u||r.user_name===u)&&(!a||r.area===a)&&(!q||[r.user_name,r.area,r.action,r.detail].join(' ').toLowerCase().includes(q)));
+  const cls=x=>x==='gelöscht'?'text-danger':x==='angelegt'||x==='freigeschaltet'?'text-success':'';
+  $('logBox').innerHTML=list.length?`<div class="table-responsive"><table class="table align-middle mb-0 stack">
+    <thead><tr><th>Zeit</th><th>Benutzer</th><th>Aktion</th><th>Bereich</th><th>Details</th></tr></thead><tbody>
+    ${list.map(r=>`<tr><td data-label="Zeit" class="text-nowrap">${fmt(r.at)}</td><td data-label="Benutzer" class="fw-semibold">${esc(r.user_name)}</td>
+      <td data-label="Aktion" class="${cls(r.action)}">${esc(r.action)}</td><td data-label="Bereich">${esc(r.area)}</td><td data-label="Details">${esc(r.detail)||'–'}</td></tr>`).join('')}
+    </tbody></table></div>`:'<p class="text-secondary text-center mb-0">Keine Einträge gefunden.</p>';
+}
+
+init({roles:['chef','dev']}).then(()=>{
+  $('who').textContent=`${dispName(ME.name)} (${ME.role})`;
+  $('navLinks').innerHTML=navLinks('logs');
+  load();
+});
+</script>
+</body>
+</html>
