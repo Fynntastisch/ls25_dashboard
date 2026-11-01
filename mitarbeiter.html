@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LS25 Mitarbeiter</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--soil:#2b2118;--field:#4f6b3a;--barn:#8c3b2a;--hay:#e0b43a;--paper:#f3efe4;--ink:#241c14}
+body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(bg.jpg) center/cover fixed;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh}
+.topbar{background:var(--soil);color:#f3efe4;border-bottom:4px solid var(--hay)}
+.topbar .btn-outline-light{--bs-btn-border-color:#8a7a66}
+.brand{font-weight:700}
+.btn-hay{background:var(--hay);border-color:var(--hay);color:var(--ink);font-weight:600}
+.btn-hay:hover{background:#c9a02e;border-color:#c9a02e}
+.btn:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.panel{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1)}
+.table th{font-weight:600;color:#6b5d4d;border-bottom-color:var(--soil)}
+.role{border-radius:4px;padding:.1rem .5rem;font-size:.85rem;font-weight:600;background:#efe9d8}
+.role.chef{background:var(--soil);color:var(--hay)}
+.role.dev{background:var(--field);color:#fff}
+.role.test{background:var(--barn);color:#fff}
+</style>
+<link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<nav class="topbar"><div class="container py-2 d-flex flex-wrap align-items-center gap-2">
+  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· Mitarbeiter</span></span>
+  <span class="me-auto ms-3 d-flex gap-1 navl" id="navLinks"></span>
+  <span class="small opacity-75" id="who"></span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
+  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
+</div></nav>
+
+<main class="container py-4">
+  <h1 class="h3 mb-3">Mitarbeiter verwalten</h1>
+  <div class="panel p-3">
+    <div class="table-responsive" id="tableBox"></div>
+    <div class="pt-3 mt-2 border-top text-center">
+      <button class="btn btn-hay" id="bNewUser" onclick="newUser()">Neuen Mitarbeiter anlegen</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down"><form class="modal-content" onsubmit="saveUser(event)">
+  <div class="modal-header"><h5 class="modal-title" id="uTitle">Mitarbeiter</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div>
+  <div class="modal-body vstack gap-3">
+    <input type="hidden" id="uOld">
+    <div><label class="form-label" for="uDisplay">Name</label><input class="form-control" id="uDisplay" autocomplete="off" required oninput="updateLogin()" placeholder="z. B. Max Mustermann"><div class="form-text">So erscheint der Name im Dashboard. Groß- und Kleinschreibung, Leerzeichen und Umlaute sind erlaubt.</div></div>
+    <div><label class="form-label" for="uName">Login-Name</label><input class="form-control" id="uName" readonly><div class="form-text" id="uNameHint"></div></div>
+    <div id="uPwBox"><label class="form-label" for="uPw">Passwort</label><input class="form-control" id="uPw" minlength="6" autocomplete="new-password"><div class="form-text">Mindestens 6 Zeichen. Jeder kann es später selbst ändern.</div></div>
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label" for="uRole">Rolle</label><select class="form-select" id="uRole" onchange="onRole()"></select></div>
+      <div class="col-6" id="farmCol"><label class="form-label" for="uFarm">Farm</label><select class="form-select" id="uFarm"></select></div>
+    </div>
+    <div id="deptBox"><label class="form-label" for="uDept">Abteilung</label><input class="form-control" id="uDept" list="deptList" placeholder="z. B. Ackerbau, Transport, Werkstatt"><datalist id="deptList"></datalist></div>
+    <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="uActive"><label class="form-check-label" for="uActive">Account aktiv (zum Sperren ausschalten)</label></div>
+    <div>
+      <div class="fw-semibold mb-1">Rechte</div>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-1"><thead id="pHead"></thead><tbody id="pBody"></tbody></table></div>
+      <div class="form-text" id="pHint"></div>
+    </div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Abbrechen</button><button class="btn btn-hay" id="uSave">Speichern</button></div>
+</form></div></div>
+
+<div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down"><form class="modal-content" onsubmit="doReset(event)">
+  <div class="modal-header"><h5 class="modal-title">Passwort zurücksetzen</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div>
+  <div class="modal-body vstack gap-3">
+    <input type="hidden" id="rId"><div class="fw-semibold" id="rWho"></div>
+    <div><label class="form-label" for="rPw">Neues Passwort</label><input class="form-control" id="rPw" minlength="6" required autocomplete="new-password"><div class="form-text">Gib es dem Mitarbeiter weiter, er kann es danach selbst ändern. Das alte Passwort lässt sich nicht anzeigen, es wird nur verschlüsselt gespeichert.</div></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Abbrechen</button><button class="btn btn-hay">Passwort setzen</button></div>
+</form></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="nav.js"></script>
+<script src="version.js"></script>
+<script>
+const ROLES={chef:'Chef',dev:'Developer',mitarbeiter:'Mitarbeiter',test:'Test'};
+const FARMS={haupt:'Hauptfarm',neben:'Nebenfarm',beide:'Beide Farmen'};
+const AREAS={vehicles:'Fuhrpark',tasks:'Aufgaben',posts:'Infos'};
+const ACTIONS={view:'Ansehen',add:'Hinzufügen',edit:'Bearbeiten',delete:'Löschen'};
+const DEFAULT_PERMS={vehicles:{view:true,add:true,edit:true,delete:false},tasks:{view:true,add:true,edit:true,delete:false},posts:{view:true,add:false,edit:false,delete:false}};
+let data,me;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
+const isChef=()=>me.role==='chef';
+const canReset=u=>u.id!==me.id&&(isChef()||['mitarbeiter','test'].includes(u.role));
+const activeChefs=()=>data.users.filter(u=>u.role==='chef'&&u.active).length;
+
+function render(){
+  $('tableBox').innerHTML=`<table class="table align-middle mb-0 stack">
+  <thead><tr><th>Name</th><th>Rolle</th><th>Farm</th><th>Abteilung</th><th>Status</th><th></th></tr></thead><tbody>
+  ${data.users.map(u=>`<tr>
+    <td class="fw-semibold" data-label="Name">${esc(u.display||u.name)}${u.id===me.id?' <span class="small text-secondary fw-normal">(du)</span>':''}${u.display&&u.display!==u.name?`<div class="small text-secondary fw-normal">${esc(u.name)}</div>`:''}</td>
+    <td data-label="Rolle"><span class="role ${u.role}">${ROLES[u.role]||esc(u.role)}</span></td>
+    <td data-label="Farm">${['dev','test'].includes(u.role)?'–':(FARMS[u.farm]||'–')}</td><td data-label="Abteilung">${esc(u.dept)||'–'}</td>
+    <td data-label="Status">${u.active?'Aktiv':'<span class="text-danger">Gesperrt</span>'}</td>
+    <td class="text-end text-nowrap" data-label="">
+      <button class="btn btn-sm btn-outline-dark" onclick="editUser('${u.id}')">${isChef()?'Bearbeiten':'Ansehen'}</button>
+      ${canReset(u)?`<button class="btn btn-sm btn-outline-dark" onclick="openReset('${u.id}')">Passwort</button>`:''}
+      ${u.id===me.id||!isChef()?'':`<button class="btn btn-sm btn-outline-danger" onclick="delUser('${u.id}')">Löschen</button>`}
+    </td></tr>`).join('')}
+  </tbody></table>`;
+  $('deptList').innerHTML=[...new Set(['Ackerbau','Viehzucht','Transport','Werkstatt',...data.users.map(u=>u.dept).filter(Boolean)])].map(d=>`<option value="${esc(d)}">`).join('');
+}
+
+const um=()=>bootstrap.Modal.getOrCreateInstance($('userModal'));
+const opts=(obj,sel)=>Object.entries(obj).map(([k,n])=>`<option value="${k}" ${k===sel?'selected':''}>${n}</option>`).join('');
+
+function fillPerms(p){
+  $('pHead').innerHTML=`<tr><th></th>${Object.values(ACTIONS).map(a=>`<th class="text-center fw-normal small">${a}</th>`).join('')}</tr>`;
+  $('pBody').innerHTML=Object.entries(AREAS).map(([a,n])=>`<tr><td>${n}</td>${Object.entries(ACTIONS).map(([k,l])=>
+    `<td class="text-center"><input class="form-check-input" type="checkbox" data-area="${a}" data-act="${k}" aria-label="${n}: ${l}" ${p?.[a]?.[k]?'checked':''}></td>`).join('')}</tr>`).join('');
+}
+function readPerms(){
+  const p={vehicles:{},tasks:{},posts:{}};
+  document.querySelectorAll('#pBody input').forEach(i=>{p[i.dataset.area][i.dataset.act]=i.checked});
+  return p;
+}
+function lockPerms(){   /* Chef: immer alle Rechte, nicht änderbar */
+  const chef=$('uRole').value==='chef';
+  document.querySelectorAll('#pBody input').forEach(i=>{i.disabled=chef;if(chef)i.checked=true});
+  $('pHint').textContent=chef?'Der Chef darf immer alles und verwaltet die Mitarbeiter.':'Wer etwas nicht darf, kann es auch über Umwege nicht tun. Mitarbeiter verwalten darf nur der Chef.';
+}
+function toggleFarmDept(){const s=['dev','test'].includes($('uRole').value);$('farmCol').hidden=s;$('deptBox').hidden=s}
+function onRole(){toggleFarmDept();   /* Developer starten mit allen Rechten, danach änderbar */
+  if($('uRole').value==='dev') document.querySelectorAll('#pBody input').forEach(i=>{i.checked=true});
+  lockPerms();
+}
+function updateLogin(){
+  if($('uOld').value) return;
+  const n=loginName($('uDisplay').value);
+  $('uName').value=n;
+  $('uNameHint').textContent=n?'Damit melden sich Mitarbeiter an (Groß-/Kleinschreibung egal).':'';
+}
+
+function fill(u,isNew){
+  $('uOld').value=isNew?'':u.id;
+  $('uDisplay').value=u.display||(isNew?'':u.name);$('uName').value=u.name;
+  $('uNameHint').textContent=isNew?'':'Der Login-Name bleibt gleich, auch wenn du den Namen änderst.';
+  $('uPwBox').hidden=!isNew;$('uPw').value='';$('uPw').required=isNew;
+  $('uRole').innerHTML=opts(ROLES,u.role);$('uFarm').innerHTML=opts(FARMS,u.farm);
+  $('uDept').value=u.dept||'';$('uActive').checked=u.active;
+  fillPerms(u.perms);lockPerms();toggleFarmDept();
+  if(!isChef()) document.querySelectorAll('#userModal input:not([type=hidden]),#userModal select').forEach(i=>i.disabled=true);   /* Developer: nur ansehen */
+  $('uSave').hidden=!isChef();
+  $('uTitle').textContent=isNew?'Neuen Mitarbeiter anlegen':'Mitarbeiter bearbeiten';
+  um().show();
+}
+function newUser(){fill({name:'',display:'',role:'mitarbeiter',farm:'haupt',dept:'',active:true,perms:DEFAULT_PERMS},true)}
+function editUser(id){fill(data.users.find(u=>u.id===id),false)}
+
+async function saveUser(e){e.preventDefault();
+  if(!isChef()) return;
+  const id=$('uOld').value,display=$('uDisplay').value.trim();
+  const o={role:$('uRole').value,farm:$('uFarm').value,dept:$('uDept').value.trim(),active:$('uActive').checked,perms:readPerms()};
+  if(o.role==='dev'){o.farm='beide';o.dept='Developer'}else if(o.role==='test'){o.farm='beide';o.dept='Test'}   /* Abteilung ergibt sich aus der Rolle */
+  const dbo={...o,display_name:display};
+  const btn=$('uSave');btn.disabled=true;
+  try{
+    if(id){
+      const u=data.users.find(x=>x.id===id);
+      if(u.role==='chef'&&u.active&&(o.role!=='chef'||!o.active)&&(activeChefs()===1||u.id===me.id))
+        return alert('Der letzte aktive Chef (oder dein eigener Account) kann nicht herabgestuft oder gesperrt werden.');
+      const {error}=await sb.from('profiles').update(dbo).eq('id',id);
+      if(error) return alert('Speichern fehlgeschlagen: '+error.message);
+      Object.assign(u,o,{display});
+    }else{
+      const name=loginName(display);
+      if(!/^[a-z0-9._-]+$/.test(name)) return alert('Der Name darf nur Buchstaben (auch Umlaute), Zahlen, Leerzeichen, Punkt, Unterstrich und Bindestrich enthalten.');
+      if(data.users.some(x=>x.name===name)) return alert('Einen Account mit diesem Login-Namen gibt es schon.');
+      /* Einladung für genau diesen Namen eintragen, sonst lehnt die Datenbank die Registrierung ab */
+      const {error:ie}=await sb.rpc('create_invite',{uname:name});
+      if(ie) return alert('Die Einladung konnte nicht erstellt werden: '+ie.message+' (Wurde supabase-update-5.sql ausgeführt?)');
+      /* Eigener Client ohne gespeicherte Sitzung, damit du als Chef angemeldet bleibst */
+      const tmp=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+      const {data:r,error}=await tmp.auth.signUp({email:emailOf(name),password:$('uPw').value});
+      if(error||!r.user) return alert('Der Account konnte nicht angelegt werden: '+(error?error.message:'unbekannter Fehler'));
+      const {error:e2}=await sb.from('profiles').update(dbo).eq('id',r.user.id);
+      if(e2) return alert('Der Account wurde angelegt, aber Rechte und Freischaltung konnten nicht gespeichert werden: '+e2.message);
+      data.users.push({id:r.user.id,name,...o,display});
+    }
+    um().hide();render();
+  }finally{btn.disabled=false}
+}
+
+async function delUser(id){
+  const u=data.users.find(x=>x.id===id);
+  if(u.role==='chef'&&u.active&&activeChefs()===1) return alert('Der letzte Chef kann nicht gelöscht werden.');
+  if(!confirm(`Account „${u.display||u.name}“ wirklich löschen? Seine Aufgaben werden auf „Nicht zugewiesen“ gesetzt.`)) return;
+  const {error}=await sb.rpc('delete_user',{uid:id});
+  if(error) return alert('Löschen fehlgeschlagen: '+error.message);
+  data.users=data.users.filter(x=>x.id!==id);
+  render();
+}
+
+const rm=()=>bootstrap.Modal.getOrCreateInstance($('resetModal'));
+function openReset(id){const u=data.users.find(x=>x.id===id);$('rId').value=id;$('rWho').textContent='Für: '+(u.display||u.name);$('rPw').value='';rm().show()}
+async function doReset(e){e.preventDefault();
+  const {error}=await sb.rpc('admin_set_password',{uid:$('rId').value,new_password:$('rPw').value});
+  if(error) return alert('Zurücksetzen fehlgeschlagen: '+error.message);
+  rm().hide();alert('Das Passwort wurde geändert.');
+}
+
+init({roles:['chef','dev']}).then(()=>{
+  data=DATA;me=ME;$('bNewUser').hidden=!isChef();
+  $('who').textContent=`${dispName(me.name)} (${me.role})`;
+  $('navLinks').innerHTML=navLinks('mitarbeiter');
+  render();
+});
+</script>
+</body>
+</html>
