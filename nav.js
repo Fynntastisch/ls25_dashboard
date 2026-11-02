@@ -15,6 +15,25 @@ function navLinks(active) {
     `<a class="btn btn-sm ${k === active ? 'btn-hay' : 'btn-outline-light'}" href="${h}">${n}${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`).join('');
 }
 
+/* Kurze Meldung unten rechts (Bootstrap-Toast), verschwindet nach ein paar Sekunden */
+function showToast(msg, kind = 'success') {
+  let box = document.getElementById('toastBox');
+  if (!box) {
+    document.body.insertAdjacentHTML('beforeend', '<div id="toastBox" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1090"></div>');
+    box = document.getElementById('toastBox');
+  }
+  const el = document.createElement('div');
+  el.className = 'toast align-items-center border-0 text-bg-' + kind;
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+  el.setAttribute('aria-atomic', 'true');
+  el.innerHTML = '<div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Schließen"></button></div>';
+  el.querySelector('.toast-body').textContent = msg;
+  box.appendChild(el);
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+  new bootstrap.Toast(el, { delay: 4000 }).show();
+}
+
 function openPw() {
   if (!document.getElementById('pwModal')) {
     document.body.insertAdjacentHTML('beforeend', `
@@ -43,4 +62,5 @@ async function savePw(e) {
   const { error: e2 } = await sb.auth.updateUser({ password: document.getElementById('pwNew').value });
   if (e2) return fail(e2.message);
   bootstrap.Modal.getOrCreateInstance(document.getElementById('pwModal')).hide();
+  showToast('Dein Passwort wurde erfolgreich geändert.');
 }
