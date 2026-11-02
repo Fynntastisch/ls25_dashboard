@@ -109,7 +109,11 @@ ${topbar(FARMS[S.farm])}
       ${can('vehicles','add')?`<button class="btn btn-hay text-nowrap" onclick="newVehicle()">Fahrzeug hinzufügen</button>`:''}
     </div>
   </div>
-  <ul class="nav nav-pills flex-wrap gap-1 mb-3">${tabs}</ul>
+  <div class="d-flex gap-2 mb-3 d-sm-none">
+    <select class="form-select" aria-label="Kategorie" onchange="setCat(this.value)">${['Alle',...CATS].map(c=>`<option value="${c}" ${S.cat===c?'selected':''}>${c} (${c==='Alle'?all.length:all.filter(v=>v.cat===c).length})</option>`).join('')}</select>
+    <select class="form-select" aria-label="Sortieren nach" onchange="setSortSel(this.value)">${sortOpts()}</select>
+  </div>
+  <ul class="nav nav-pills flex-wrap gap-1 mb-3 d-none d-sm-flex">${tabs}</ul>
   <div class="panel p-3" id="tableBox">${tableHtml()}</div>
 </main>`}
 
@@ -132,17 +136,13 @@ function tableHtml(){
       ${can('vehicles','edit')?`<button class="btn btn-sm btn-outline-dark" onclick="editVehicle(${v.id})">Bearbeiten</button>`:''}
       ${canDelete()?`<button class="btn btn-sm btn-outline-danger" onclick="delVehicle(${v.id})">Löschen</button>`:''}</td></tr>`).join('');
   return `<div class="table-responsive"><table class="table align-middle mb-0 stack"><thead><tr>${th}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`}
+/* Handy: Sortierung per Auswahlfeld statt Spaltenüberschriften */
+function sortOpts(){const cols=(S.cat==='Alle'?[['cat','Kategorie']]:[]).concat(COLS);return cols.map(([k,n])=>[1,-1].map(d=>`<option value="${k}|${d}" ${S.sort===k&&S.dir===d?'selected':''}>${n} ${d>0?'A–Z':'Z–A'}</option>`).join('')).join('')}
+function setSortSel(v){const [k,d]=v.split('|');S.sort=k;S.dir=Number(d);updateTable()}
 function updateTable(){$('tableBox').innerHTML=tableHtml()}
 function setSort(k){if(S.sort===k)S.dir*=-1;else{S.sort=k;S.dir=1}updateTable()}
 
-function topbar(where){return `
-<nav class="topbar"><div class="container d-flex flex-wrap align-items-center gap-2 py-2">
-  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· ${esc(where)}</span></span>
-  <span class="me-auto ms-3 d-flex gap-1 navl">${navLinks('fuhrpark')}</span>
-  ${S.farm?`<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat='Alle';render()">Farm wechseln</button>`:''}
-  <span class="small opacity-75">${esc(dispName(S.user.name))} (${S.user.role})</span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
-  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
-</div></nav>`}
+function topbar(where){return topbarHtml('fuhrpark',where,{farmSwitch:!!S.farm})}
 
 /* Aktionen */
 function openFarm(k){S.farm=k;S.cat='Alle';render()}
