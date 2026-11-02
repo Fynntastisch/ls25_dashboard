@@ -204,7 +204,7 @@ function openReset(id){const u=data.users.find(x=>x.id===id);$('rId').value=id;$
 async function doReset(e){e.preventDefault();
   const {error}=await sb.rpc('admin_set_password',{uid:$('rId').value,new_password:$('rPw').value});
   if(error) return alert('Zurücksetzen fehlgeschlagen: '+error.message);
-  rm().hide();alert('Das Passwort wurde geändert.');
+  rm().hide();showToast('Das Passwort wurde geändert.');
 }
 
 init({roles:['chef','dev']}).then(()=>{
@@ -215,4 +215,17 @@ init({roles:['chef','dev']}).then(()=>{
 });
 </script>
 </body>
+
+<!-- 
+                    _,)
+            _..._.-;-'
+         .-'     `(
+        /      ;   \
+       ;.' ;`  ,;  ;
+      .'' ``. (  \ ;
+     / f_ _L \ ;  )\
+     \/|` '|\/;; <;/
+    ((; \_/  (()       Fynn Wintzen - 01.11.2026
+         "
+-->
 </html>

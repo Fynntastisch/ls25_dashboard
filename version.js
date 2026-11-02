@@ -9,6 +9,10 @@ const CHANGELOG = [
       'Infos-Seite für Beiträge und Ankündigungen',
       'Mitarbeiter-Verwaltung mit Rollen (Chef, Developer, Mitarbeiter, Test) und Einzelrechten',
       'Protokoll für Chef und Developer: wer hat wann was gemacht',
+      'Infos zeigen Ersteller und letzten Bearbeiter mit Datum und Uhrzeit',
+      'Erledigte Aufgaben und Protokoll-Einträge werden nach 7 Tagen automatisch gelöscht',
+      'Beim Schließen des Tabs oder Fensters wirst du automatisch abgemeldet',
+      'Bestätigungsmeldung nach dem Ändern des Passworts',
       'Optimiert für Handy und PC'
     ]
   }

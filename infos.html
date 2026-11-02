@@ -70,7 +70,7 @@ function render(){
   const list=[...data.posts].sort((a,b)=>String(b.created).localeCompare(String(a.created)));
   $('posts').innerHTML=list.length?list.map(p=>`<article class="post">
     <h2>${esc(p.title)}</h2>
-    <div class="small text-secondary mb-2">${esc(p.author?dispName(p.author):'Unbekannt')} · ${fmt(p.created)}${p.updated&&p.updated!==p.created?' · bearbeitet':''}</div>
+    <div class="small text-secondary mb-2">Erstellt von ${esc(p.author?dispName(p.author):'Unbekannt')} · ${fmt(p.created)} Uhr${p.edited?`<br>Zuletzt bearbeitet von ${esc(dispName(p.edited))} · ${fmt(p.updated)} Uhr`:''}</div>
     <div class="body">${esc(p.body)}</div>
     ${can('posts','edit')||can('posts','delete')?`<div class="mt-3 d-flex gap-2">
       ${can('posts','edit')?`<button class="btn btn-sm btn-outline-dark" onclick="editPost(${p.id})">Bearbeiten</button>`:''}
@@ -83,7 +83,7 @@ function newPost(){if(!can('posts','add'))return;$('pId').value='';$('pName').va
 function editPost(id){const p=data.posts.find(x=>x.id===id);$('pId').value=id;$('pName').value=p.title;$('pBody').value=p.body;$('pTitle').textContent='Beitrag bearbeiten';pm().show()}
 function savePost(e){e.preventDefault();
   const id=Number($('pId').value),now=new Date().toISOString(),title=$('pName').value.trim(),body=$('pBody').value.trim();
-  if(id){const p=data.posts.find(x=>x.id===id);Object.assign(p,{title,body,updated:now})}
+  if(id){const p=data.posts.find(x=>x.id===id);if(p.title!==title||p.body!==body)Object.assign(p,{title,body,updated:now,edited:me.name})}
   else data.posts.push({id:Date.now(),title,body,author:me.name,created:now,updated:now});
   save();pm().hide();render()}
 function delPost(id){
@@ -101,4 +101,17 @@ init().then(()=>{
 });
 </script>
 </body>
+
+<!-- 
+                    _,)
+            _..._.-;-'
+         .-'     `(
+        /      ;   \
+       ;.' ;`  ,;  ;
+      .'' ``. (  \ ;
+     / f_ _L \ ;  )\
+     \/|` '|\/;; <;/
+    ((; \_/  (()       Fynn Wintzen - 01.11.2026
+         "
+-->
 </html>
