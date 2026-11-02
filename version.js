@@ -1,6 +1,16 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = 'Beta 1.0.0';
+const APP_VERSION = 'Beta 1.0.1';
 const CHANGELOG = [
+  {
+    version: 'Beta 1.0.1', date: '02.11.2026', title: 'Verbesserungen für das Handy',
+    items: [
+      'Neues Menü mit Hamburger-Button statt breiter Menüleiste',
+      'Passwort und Abmelden liegen auf dem Handy im Menü',
+      'Fuhrpark: Kategorie und Sortierung als Auswahlfelder statt Reiter und Spaltenüberschriften',
+      'Listen auf dem Handy ohne Spaltenüberschriften',
+      'Update-Logs mit gut sichtbaren Aufzählungspunkten'
+    ]
+  },
   {
     version: 'Beta 1.0.0', date: '01.11.2026', title: 'Erste Testversion',
     items: [

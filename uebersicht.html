@@ -25,12 +25,7 @@ a.stat:hover{transform:translateY(-3px);color:#fff}
 <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
-<nav class="topbar"><div class="container py-2 d-flex flex-wrap align-items-center gap-2">
-  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· Übersicht</span></span>
-  <span class="me-auto ms-3 d-flex gap-1 navl" id="navLinks"></span>
-  <span class="small opacity-75" id="who"></span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
-  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
-</div></nav>
+<div id="topbar"></div>
 
 <main class="container py-4">
   <h1 class="h3 mb-4" id="hello"></h1>
@@ -58,8 +53,7 @@ function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
 
 function boot(){
   $('news').innerHTML=CHANGELOG.slice(0,3).map(c=>`<div class="mb-3"><div><span class="badge text-bg-dark me-2">${esc(c.version)}</span><span class="fw-semibold">${esc(c.title)}</span> <span class="small text-secondary">· ${esc(c.date)}</span></div><ul class="mb-0 mt-1">${c.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`).join('');
-  $('who').textContent=`${dispName(me.name)} (${me.role})`;
-  $('navLinks').innerHTML=navLinks('uebersicht');
+  $('topbar').outerHTML=topbarHtml('uebersicht','Übersicht',{fluid:false});
   $('hello').textContent=`Hallo ${dispName(me.name)}`;
   const open=data.tasks.filter(t=>t.status!=='Erledigt');
   const late=open.filter(t=>t.due&&t.due<today&&(me.role==='chef'||t.assignee===me.name));

@@ -1,18 +1,20 @@
 /* Responsive Anpassungen für Handy und Tablet (wird von allen Dashboard-Seiten geladen) */
 
-/* Navigation: auf kleinen Bildschirmen eigene Zeile, seitlich scrollbar */
+/* Navigation: Bootstrap-Navbar, auf dem Handy mit Hamburger-Button und aufklappbarem Menü */
 .navl .btn { white-space: nowrap; }
+.topbar .navbar-toggler { border-color: #8a7a66; padding: .2rem .5rem; }
+.topbar .navbar-toggler:focus { box-shadow: 0 0 0 .15rem #e0b43a; }
 @media (max-width: 767.98px) {
-  .topbar .navl { order: 3; width: 100%; margin: 0 !important; overflow-x: auto; padding-bottom: .25rem; }
   .topbar .brand > span { display: none; }
+  .topbar .who { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar .navl .btn, .topbar .menu-actions .btn { display: block; width: 100%; text-align: left; padding: .55rem .75rem; font-size: .95rem; }
+  .topbar .navbar-collapse { padding-bottom: .5rem; }
 }
 
-/* Tabellen werden auf dem Handy zu Karten, die Überschriften bleiben als Sortierleiste */
+/* Tabellen werden auf dem Handy zu Karten, die Spaltenüberschriften entfallen */
 @media (max-width: 575.98px) {
   .stack, .stack tbody, .stack tr { display: block; }
-  .stack thead tr { display: flex; flex-wrap: wrap; gap: .25rem .9rem; padding-bottom: .5rem; border-bottom: 2px solid #2b2118; }
-  .stack thead th { border: 0; padding: 0; box-shadow: none; }
-  .stack thead th:empty { display: none; }
+  .stack thead { display: none; }
   .stack tbody tr { border: 1px solid #e0d9c6; border-radius: 6px; padding: .5rem .75rem; margin-top: .75rem; background: #fff; }
   .stack td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 0; box-shadow: none; padding: .3rem 0; text-align: right; background: transparent; }
   .stack td::before { content: attr(data-label); font-size: .8rem; color: #6b5d4d; font-weight: 600; text-align: left; }
@@ -45,3 +47,7 @@
   .form-check-input { width: 1.25em; height: 1.25em; }
   .card-task { cursor: pointer; }
 }
+
+/* Update-Logs: Aufzählungspunkte immer sichtbar */
+#news ul { list-style: disc outside; padding-left: 1.25rem; margin-bottom: 0; }
+#news li { display: list-item; }

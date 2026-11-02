@@ -36,12 +36,7 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(b
 <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
-<nav class="topbar"><div class="container-fluid px-4 d-flex flex-wrap align-items-center gap-2 py-2">
-  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· Aufgaben</span></span>
-  <span class="me-auto ms-3 d-flex gap-1 navl" id="navLinks"></span>
-  <span class="small opacity-75" id="who"></span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
-  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
-</div></nav>
+<div id="topbar"></div>
 
 <main class="container-fluid px-4 py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
@@ -207,7 +202,7 @@ function delTask(){
   const id=Number($('tId').value),t=data.tasks.find(x=>x.id===id);
   if(confirm(`Aufgabe „${t.title}“ wirklich löschen?`)){data.tasks=data.tasks.filter(x=>x.id!==id);save();tm().hide();render()}}
 
-init().then(()=>{data=DATA;me=ME;$('who').textContent=`${dispName(me.name)} (${me.role})`;$('navLinks').innerHTML=navLinks('aufgaben');$('bNew').hidden=!can('tasks','add');
+init().then(()=>{data=DATA;me=ME;$('topbar').outerHTML=topbarHtml('aufgaben','Aufgaben',{fluid:true});$('bNew').hidden=!can('tasks','add');
   if(!can('tasks','view')){$('view').innerHTML='<div class="panel p-4 text-center text-secondary">Du hast keinen Zugriff auf die Aufgaben.</div>';return}
   render()});
 </script>

@@ -15,6 +15,26 @@ function navLinks(active) {
     `<a class="btn btn-sm ${k === active ? 'btn-hay' : 'btn-outline-light'}" href="${h}">${n}${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`).join('');
 }
 
+/* Obere Leiste (Bootstrap-Navbar): am PC alles in einer Zeile, auf dem Handy Hamburger-Button und aufklappbares Menü */
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function topbarHtml(active, title, opts = {}) {
+  const who = escapeHtml(dispName(ME.name)) + ' (' + escapeHtml(ME.role) + ')';
+  const farm = opts.farmSwitch ? '<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat=\'Alle\';render()">Farm wechseln</button>' : '';
+  const acts = farm + '<button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>';
+  return `<nav class="navbar navbar-expand-md topbar" data-bs-theme="dark">
+  <div class="${opts.fluid ? 'container-fluid px-3 px-md-4' : 'container'} gap-2">
+    <span class="navbar-brand brand mb-0 py-0 fs-6">LS25 Dashboard <span class="opacity-75 fw-normal">· ${escapeHtml(title)}</span></span>
+    <button class="navbar-toggler order-2" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Menü öffnen oder schließen"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse order-3 order-md-0" id="navMenu">
+      <div class="navl d-flex flex-column flex-md-row gap-1 me-md-auto py-2 py-md-0">${navLinks(active)}</div>
+      <div class="menu-actions d-md-none vstack gap-1 border-top border-secondary pt-2">${acts}</div>
+    </div>
+    <span class="who small opacity-75 order-1 order-md-0 ms-auto ms-md-0">${who}</span>
+    <div class="d-none d-md-flex align-items-center gap-2">${acts}</div>
+  </div>
+</nav>`;
+}
+
 /* Kurze Meldung unten rechts (Bootstrap-Toast), verschwindet nach ein paar Sekunden */
 function showToast(msg, kind = 'success') {
   let box = document.getElementById('toastBox');

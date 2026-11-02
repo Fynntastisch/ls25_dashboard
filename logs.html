@@ -27,12 +27,7 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(b
 <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
-<nav class="topbar"><div class="container py-2 d-flex flex-wrap align-items-center gap-2">
-  <span class="brand">LS25 Dashboard <span class="opacity-75 fw-normal">· Protokoll</span></span>
-  <span class="me-auto ms-3 d-flex gap-1 navl" id="navLinks"></span>
-  <span class="small opacity-75" id="who"></span><button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button>
-  <button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>
-</div></nav>
+<div id="topbar"></div>
 
 <main class="container py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
@@ -82,8 +77,7 @@ function render(){
 }
 
 init({roles:['chef','dev']}).then(()=>{
-  $('who').textContent=`${dispName(ME.name)} (${ME.role})`;
-  $('navLinks').innerHTML=navLinks('logs');
+  $('topbar').outerHTML=topbarHtml('logs','Protokoll',{fluid:false});
   load();
 });
 </script>
