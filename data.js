@@ -1,7 +1,8 @@
 /* Gemeinsamer Datenzugriff (Supabase) für alle Seiten.
    Seiten rufen init() auf und arbeiten danach mit DATA (users, vehicles, tasks).
    store.save(data) gleicht Änderungen an Fahrzeugen und Aufgaben mit der Datenbank ab. */
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* Die Anmeldung liegt nur im sessionStorage: Schließt man Tab oder Fenster, ist man automatisch abgemeldet. */
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: window.sessionStorage } });
 /* Aus einem Namen wie "Max Müller" wird der Login-Name "max.mueller" (klein, ohne Leerzeichen und Umlaute) */
 function loginName(n) {
   return String(n).trim().toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/\s+/g, '.');
@@ -37,7 +38,7 @@ const tLocal = r => ({
 });
 
 const pRow = p => ({ id: p.id, title: p.title, body: p.body || '', author: UIDS[p.author] || null, created_at: p.created, updated_at: p.updated });
-const pLocal = r => ({ id: r.id, title: r.title, body: r.body || '', author: NAMES[r.author] || '', created: r.created_at, updated: r.updated_at });
+const pLocal = r => ({ id: r.id, title: r.title, body: r.body || '', author: NAMES[r.author] || '', created: r.created_at, updated: r.updated_at, edited: NAMES[r.edited_by] || '' });
 
 function takeSnapshot() {
   const vids = new Set(DATA.vehicles.map(v => v.id));

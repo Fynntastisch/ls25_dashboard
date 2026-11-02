@@ -147,6 +147,7 @@ function render(){
 }
 
 function boardHtml(list){return `<div class="board">${STATUS.map((st,i)=>{
+  if(S.hideDone&&st==='Erledigt')return '';
   const items=list.filter(t=>t.status===st);
   return `<section class="col-status" aria-label="${st}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="drop(event,${i})">
     <div class="col-head"><span>${st}</span><span class="n">${items.length}</span></div>
@@ -211,4 +212,17 @@ init().then(()=>{data=DATA;me=ME;$('who').textContent=`${dispName(me.name)} (${m
   render()});
 </script>
 </body>
+
+<!-- 
+                    _,)
+            _..._.-;-'
+         .-'     `(
+        /      ;   \
+       ;.' ;`  ,;  ;
+      .'' ``. (  \ ;
+     / f_ _L \ ;  )\
+     \/|` '|\/;; <;/
+    ((; \_/  (()       Fynn Wintzen - 01.11.2026
+         "
+-->
 </html>
