@@ -1,6 +1,13 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = 'Beta 1.0.1';
+const APP_VERSION = 'Beta 1.0.2';
 const CHANGELOG = [
+  {
+    version: 'Beta 1.0.2', date: '03.11.2026', title: 'Kleine Verbesserungen',
+    items: [
+      'Der Titel „LS25 Dashboard“ in der Menüleiste führt zur Übersicht',
+      'Aufgaben merken sich die Schalter „Meine“ und „Erledigte ausblenden“'
+    ]
+  },
   {
     version: 'Beta 1.0.1', date: '02.11.2026', title: 'Verbesserungen für das Handy',
     items: [

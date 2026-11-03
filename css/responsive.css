@@ -2,6 +2,8 @@
 
 /* Navigation: Bootstrap-Navbar, auf dem Handy mit Hamburger-Button und aufklappbarem Menü */
 .navl .btn { white-space: nowrap; }
+.topbar .brand { color: #f3efe4; text-decoration: none; }
+.topbar .brand:hover, .topbar .brand:focus-visible { color: #e0b43a; }
 .topbar .navbar-toggler { border-color: #8a7a66; padding: .2rem .5rem; }
 .topbar .navbar-toggler:focus { box-shadow: 0 0 0 .15rem #e0b43a; }
 @media (max-width: 767.98px) {

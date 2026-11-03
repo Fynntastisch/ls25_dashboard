@@ -46,8 +46,8 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
       <option value="alle">Alle Farmen</option><option value="haupt">Hauptfarm</option><option value="neben">Nebenfarm</option>
     </select>
     <select class="form-select w-auto" id="fLabel" aria-label="Label filtern" onchange="S.label=this.value;render()"></select>
-    <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fMine" onchange="S.mine=this.checked;render()"><label class="form-check-label" for="fMine">Meine</label></div>
-    <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fDone" onchange="S.hideDone=this.checked;render()"><label class="form-check-label" for="fDone">Erledigte ausblenden</label></div>
+    <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fMine" onchange="S.mine=this.checked;savePrefs();render()"><label class="form-check-label" for="fMine">Meine</label></div>
+    <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fDone" onchange="S.hideDone=this.checked;savePrefs();render()"><label class="form-check-label" for="fDone">Erledigte ausblenden</label></div>
     <div class="btn-group view-toggle" role="group" aria-label="Ansicht">
       <button class="btn btn-outline-dark" id="bBoard" onclick="setView('board')">Board</button>
       <button class="btn btn-outline-dark" id="bList" onclick="setView('list')">Liste</button>
@@ -131,6 +131,11 @@ function card(t){return `
 function fillLabels(){const all=[...new Set(data.tasks.flatMap(t=>t.labels||[]))].sort();if(S.label&&!all.includes(S.label))S.label='';$('fLabel').innerHTML='<option value="">Alle Labels</option>'+all.map(l=>`<option ${l===S.label?'selected':''}>${esc(l)}</option>`).join('')}
 const phone=window.matchMedia('(max-width: 767.98px)');   /* Handy: nur Listenansicht */
 phone.addEventListener('change',()=>render());
+/* Die beiden Schalter "Meine" und "Erledigte ausblenden" bleiben pro Benutzer gespeichert (auch nach dem Schließen) */
+const prefKey=()=>'ls25_aufgaben_'+me.id;
+function loadPrefs(){try{const p=JSON.parse(localStorage.getItem(prefKey())||'{}');S.mine=!!p.mine;S.hideDone=!!p.hideDone;$('fMine').checked=S.mine;$('fDone').checked=S.hideDone}catch(e){}}
+function savePrefs(){try{localStorage.setItem(prefKey(),JSON.stringify({mine:S.mine,hideDone:S.hideDone}))}catch(e){}}
+
 function render(){
   if(!data)return;
   const view=phone.matches?'list':S.view;
@@ -202,7 +207,7 @@ function delTask(){
   const id=Number($('tId').value),t=data.tasks.find(x=>x.id===id);
   if(confirm(`Aufgabe „${t.title}“ wirklich löschen?`)){data.tasks=data.tasks.filter(x=>x.id!==id);save();tm().hide();render()}}
 
-init().then(()=>{data=DATA;me=ME;$('topbar').outerHTML=topbarHtml('aufgaben','Aufgaben',{fluid:true});$('bNew').hidden=!can('tasks','add');
+init().then(()=>{data=DATA;me=ME;$('topbar').outerHTML=topbarHtml('aufgaben','Aufgaben',{fluid:true});$('bNew').hidden=!can('tasks','add');loadPrefs();
   if(!can('tasks','view')){$('view').innerHTML='<div class="panel p-4 text-center text-secondary">Du hast keinen Zugriff auf die Aufgaben.</div>';return}
   render()});
 </script>
