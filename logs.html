@@ -36,6 +36,13 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     <select class="form-select w-auto" id="fUser" aria-label="Benutzer filtern" onchange="render()"></select>
     <select class="form-select w-auto" id="fArea" aria-label="Bereich filtern" onchange="render()"></select>
   </div>
+  <div id="purgeBox" class="d-flex flex-wrap align-items-center gap-2 mb-3" hidden>
+    <span>Einträge löschen, die älter sind als</span>
+    <select class="form-select w-auto" id="purgeDays" aria-label="Alter in Tagen">
+      <option value="3">3 Tage</option><option value="4">4 Tage</option><option value="5">5 Tage</option><option value="6">6 Tage</option><option value="7">7 Tage</option>
+    </select>
+    <button class="btn btn-outline-danger" onclick="purge()">Löschen</button>
+  </div>
   <div class="panel p-3" style="background:#fff;border-radius:6px"><div id="logBox"></div>
     <div class="text-center mt-3"><button class="btn btn-outline-dark" id="bMore" onclick="load()" hidden>Ältere Einträge laden</button></div></div>
 </main>
@@ -60,6 +67,14 @@ async function load(){
   rows=rows.concat(r);offset+=r.length;$('bMore').hidden=r.length<PAGE;
   fillFilters();render();
 }
+async function purge(){
+  const d=Number($('purgeDays').value);
+  if(!confirm(`Alle Protokoll-Einträge löschen, die älter als ${d} Tage sind? Das kann nicht rückgängig gemacht werden.`))return;
+  const {data:n,error}=await sb.rpc('delete_logs_older_than',{p_days:d});
+  if(error)return alert('Löschen fehlgeschlagen: '+error.message+' (Wurde supabase-update-7.sql ausgeführt?)');
+  showToast(n+' Einträge gelöscht.');
+  rows=[];offset=0;load();
+}
 function fillFilters(){
   const keep=(id,all,vals)=>{const cur=$(id).value;$(id).innerHTML=`<option value="">${all}</option>`+vals.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')};
   keep('fUser','Alle Benutzer',[...new Set(rows.map(r=>r.user_name))].sort());
@@ -78,6 +93,7 @@ function render(){
 
 init({roles:['chef','dev']}).then(()=>{
   $('topbar').outerHTML=topbarHtml('logs','Protokoll',{fluid:false});
+  $('purgeBox').hidden=ME.role!=='chef';
   load();
 });
 </script>

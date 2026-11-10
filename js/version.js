@@ -1,6 +1,24 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = 'Beta 1.0.2';
+const APP_VERSION = 'Beta 1.1.1';
 const CHANGELOG = [
+  {
+    version: 'Beta 1.1.1', date: '10.11.2026', title: 'Kleine Anpassungen',
+    items: [
+      'Login: Formular wieder an der alten Position, das Logo steht darüber',
+      'Infos: Die Kacheln zeigen auch den letzten Bearbeiter',
+      'Feinschliff bei Farben und Buttons rund um die Update-Logs'
+    ]
+  },
+  {
+    version: 'Beta 1.1.0', date: '10.11.2026', title: 'Logo, Infos als Kacheln und mehr',
+    items: [
+      'Neues Elmcreek-Ranch-Logo in der Menüleiste und auf der Login-Seite',
+      'Update-Logs: Übersicht zeigt nur den neuesten Eintrag, alle früheren stehen auf einer eigenen Seite',
+      'Infos werden als Kacheln angezeigt, ein Klick öffnet den ganzen Beitrag',
+      'Fuhrpark: Neue Fahrzeuge lassen sich nur für die Farm anlegen, in der man gerade ist',
+      'Protokoll: Der Chef kann Einträge löschen, die älter als 3 bis 7 Tage sind'
+    ]
+  },
   {
     version: 'Beta 1.0.2', date: '03.11.2026', title: 'Kleine Verbesserungen',
     items: [

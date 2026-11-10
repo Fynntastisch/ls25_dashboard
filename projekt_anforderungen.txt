@@ -1,0 +1,13 @@
+ToDo:
+- Auf der Übersichtseite soll nur der aktuellste (letzte) Log angezeigt werden. Dafür soll dort aber ein Link sein, der auf eine neue Unterseite verweist, wo in einem Akkordion die ganzen Logs gelistet sind. Man kann die Seite für die logs nur über den einen kleinen Link auf der Übersichtseite unten erreichen, sie kommt nicht oben in die Menüleiste
+- Bei Infos sollen die Beiträge in Kacheln angezeigt werden, wo man dann drauf klicken muss um alles ansehen zu können. Wie bei einem Blog quasi, aber so das die Beiträge untereinander gelistet werden.
+- Man soll beim Fuhrpark nur bei der Farm ein Fahrzeug hinzufügen können, bei der man sich gerade auch befindet. Heißt bei Hauptfarm, kann man nur Hauptfarm wählen und bei Nebenfarm nur Nebenfarm
+- Man soll im Dashboard selber eine Möglichkeit haben Logs löschen (leeren) zu können. Wo man entscheiden kann welche. Also alles ab älter als 3 Tage, und dann bis 7 tage auswählbar welche man löschen möchte.
+- Das LS25 Dashboard soll durch ein Logo ersetzt werden, wo Elmcreek Ranch neben steht.
+- Bei der Login-Seite soll ebenfalls das Logo zu sehen sein, hier soll es über der Kachel platziert werden, in der man sich anmeldet
+
+
+
+-------
+- Projektstruktur verbessern -> Ordner erstellen, alles passende in Ordnern zusammenfügen usw
+- Ein neues Loginbild nehmen (eigenes) wegen Urheberrecht

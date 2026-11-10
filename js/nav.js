@@ -23,7 +23,7 @@ function topbarHtml(active, title, opts = {}) {
   const acts = farm + '<button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>';
   return `<nav class="navbar navbar-expand-md topbar" data-bs-theme="dark">
   <div class="${opts.fluid ? 'container-fluid px-3 px-md-4' : 'container'} gap-2">
-    <a class="navbar-brand brand mb-0 py-0 fs-6" href="uebersicht.html" title="Zur Übersicht">LS25 Dashboard <span class="opacity-75 fw-normal">· ${escapeHtml(title)}</span></a>
+    <a class="navbar-brand brand mb-0 py-0 fs-6 d-flex align-items-center gap-2" href="uebersicht.html" title="Zur Übersicht"><img class="brand-logo" src="img/logo-nav.png" alt="Elmcreek Ranch"><span class="opacity-75 fw-normal">${title ? '· ' + escapeHtml(title) : ''}</span></a>
     <button class="navbar-toggler order-2" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Menü öffnen oder schließen"><span class="navbar-toggler-icon"></span></button>
     <div class="collapse navbar-collapse order-3 order-md-0" id="navMenu">
       <div class="navl d-flex flex-column flex-md-row gap-1 me-md-auto py-2 py-md-0">${navLinks(active)}</div>
