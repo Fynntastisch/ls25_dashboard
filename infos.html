@@ -23,6 +23,11 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .post{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1);padding:1.25rem 1.5rem;margin-bottom:1rem}
 .post h2{font-size:1.35rem}
 .post .body{white-space:pre-wrap;overflow-wrap:anywhere}
+.post-tile{cursor:pointer;transition:transform .15s}
+.post-tile:hover{transform:translateY(-2px)}
+.post-tile:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.preview{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#4a3f33;overflow-wrap:anywhere}
+#rBody{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 <link rel="stylesheet" href="css/responsive.css">
 </head>
@@ -36,6 +41,16 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
   </div>
   <div id="posts"></div>
 </main>
+
+<div class="modal fade" id="readModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title" id="rTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div>
+  <div class="modal-body"><div class="small text-secondary mb-3" id="rMeta"></div><div id="rBody"></div></div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-danger me-auto" id="rDel" onclick="delFromRead()">Löschen</button>
+    <button type="button" class="btn btn-outline-dark" id="rEdit" onclick="editFromRead()">Bearbeiten</button>
+    <button type="button" class="btn btn-hay" data-bs-dismiss="modal">Schließen</button>
+  </div>
+</div></div></div>
 
 <div class="modal fade" id="postModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><form class="modal-content" onsubmit="savePost(event)">
   <div class="modal-header"><h5 class="modal-title" id="pTitle">Beitrag</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div>
@@ -63,15 +78,28 @@ function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
 
 function render(){
   const list=[...data.posts].sort((a,b)=>String(b.created).localeCompare(String(a.created)));
-  $('posts').innerHTML=list.length?list.map(p=>`<article class="post">
+  $('posts').innerHTML=list.length?list.map(p=>`<article class="post post-tile" tabindex="0" role="button" onclick="openPost(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPost(${p.id})}">
     <h2>${esc(p.title)}</h2>
     <div class="small text-secondary mb-2">Erstellt von ${esc(p.author?dispName(p.author):'Unbekannt')} · ${fmt(p.created)} Uhr${p.edited?`<br>Zuletzt bearbeitet von ${esc(dispName(p.edited))} · ${fmt(p.updated)} Uhr`:''}</div>
-    <div class="body">${esc(p.body)}</div>
-    ${can('posts','edit')||can('posts','delete')?`<div class="mt-3 d-flex gap-2">
-      ${can('posts','edit')?`<button class="btn btn-sm btn-outline-dark" onclick="editPost(${p.id})">Bearbeiten</button>`:''}
-      ${can('posts','delete')?`<button class="btn btn-sm btn-outline-danger" onclick="delPost(${p.id})">Löschen</button>`:''}</div>`:''}
+    <div class="preview">${esc(p.body)}</div>
+    <div class="mt-2 small fw-semibold">Weiterlesen →</div>
   </article>`).join(''):'<div class="post text-center text-secondary">Noch keine Beiträge.</div>';
 }
+
+/* Beitrag in voller Länge ansehen */
+const rdm=()=>bootstrap.Modal.getOrCreateInstance($('readModal'));
+let openId=null;
+function openPost(id){
+  const p=data.posts.find(x=>x.id===id);openId=id;
+  $('rTitle').textContent=p.title;
+  $('rMeta').innerHTML=`Erstellt von ${esc(p.author?dispName(p.author):'Unbekannt')} · ${fmt(p.created)} Uhr${p.edited?`<br>Zuletzt bearbeitet von ${esc(dispName(p.edited))} · ${fmt(p.updated)} Uhr`:''}`;
+  $('rBody').textContent=p.body;
+  $('rEdit').hidden=!can('posts','edit');$('rDel').hidden=!can('posts','delete');
+  rdm().show();
+}
+function afterRead(fn){const id=openId;$('readModal').addEventListener('hidden.bs.modal',()=>fn(id),{once:true});rdm().hide()}
+const editFromRead=()=>afterRead(editPost);
+const delFromRead=()=>afterRead(delPost);
 
 const pm=()=>bootstrap.Modal.getOrCreateInstance($('postModal'));
 function newPost(){if(!can('posts','add'))return;$('pId').value='';$('pName').value='';$('pBody').value='';$('pTitle').textContent='Neuer Beitrag';pm().show()}

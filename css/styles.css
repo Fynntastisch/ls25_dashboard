@@ -8,6 +8,7 @@ body {
 }
 
 .wrapper {
+  position: relative;
   width: 420px; max-width: calc(100% - 32px);
   padding: 30px 40px;
   background: transparent;
@@ -17,7 +18,7 @@ body {
   border-radius: 12px;
 }
 
-.wrapper h1 { font-size: 32px; text-align: center; }
+.wrapper h1 { font-size: 32px; text-align: center; margin-bottom: 10px; }
 .subtitle { text-align: center; font-size: 14px; opacity: .85; margin: 4px 0 10px; }
 .error {
   background: rgba(140, 59, 42, .85); border-radius: 8px;
@@ -52,3 +53,12 @@ body {
 }
 
 .app-version { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+
+/* Das Logo steht über dem Formular, ohne es zu verschieben (das Formular bleibt in der Mitte) */
+.login-logo {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 16px;
+  height: clamp(70px, calc((100vh - 340px) / 2 - 16px), 215px);
+  height: clamp(70px, calc((100dvh - 340px) / 2 - 16px), 215px);
+  width: auto; max-width: 72vw; object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .7)); pointer-events: none;
+}

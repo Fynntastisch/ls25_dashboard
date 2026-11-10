@@ -2,12 +2,14 @@
 
 /* Navigation: Bootstrap-Navbar, auf dem Handy mit Hamburger-Button und aufklappbarem Menü */
 .navl .btn { white-space: nowrap; }
+.brand-logo { height: 56px; width: auto; display: block; }
 .topbar .brand { color: #f3efe4; text-decoration: none; }
 .topbar .brand:hover, .topbar .brand:focus-visible { color: #e0b43a; }
 .topbar .navbar-toggler { border-color: #8a7a66; padding: .2rem .5rem; }
 .topbar .navbar-toggler:focus { box-shadow: 0 0 0 .15rem #e0b43a; }
 @media (max-width: 767.98px) {
   .topbar .brand > span { display: none; }
+  .brand-logo { height: 44px; }
   .topbar .who { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .topbar .navl .btn, .topbar .menu-actions .btn { display: block; width: 100%; text-align: left; padding: .55rem .75rem; font-size: .95rem; }
   .topbar .navbar-collapse { padding-bottom: .5rem; }

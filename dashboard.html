@@ -150,11 +150,11 @@ function setCat(c){S.cat=c;render()}
 
 const vm=()=>bootstrap.Modal.getOrCreateInstance($('vehModal'));
 function fillCats(sel){$('vCat').innerHTML=CATS.map(c=>`<option ${c===sel?'selected':''}>${c}</option>`).join('')}
-function fillFarm(sel){$('vFarm').innerHTML=Object.entries(FARMS).map(([k,n])=>`<option value="${k}" ${k===sel?'selected':''}>${n}</option>`).join('')}
+function fillFarm(sel,only){$('vFarm').innerHTML=Object.entries(FARMS).filter(([k])=>!only||k===sel).map(([k,n])=>`<option value="${k}" ${k===sel?'selected':''}>${n}</option>`).join('')}
 function newVehicle(){
   $('vehTitle').textContent='Fahrzeug hinzufügen';$('vId').value='';
   ['vMarke','vModell','vKz','vGebiet'].forEach(i=>$(i).value='');
-  fillCats(S.cat==='Alle'?CATS[0]:S.cat);fillFarm(S.farm);vm().show()}
+  fillCats(S.cat==='Alle'?CATS[0]:S.cat);fillFarm(S.farm,true);vm().show()}
 function editVehicle(id){const v=data.vehicles.find(x=>x.id===id);
   $('vehTitle').textContent='Fahrzeug bearbeiten';$('vId').value=id;
   $('vMarke').value=v.marke;$('vModell').value=v.modell;$('vKz').value=v.kz;$('vGebiet').value=v.gebiet;
