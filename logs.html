@@ -25,13 +25,15 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .post .body{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 <link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <div id="topbar"></div>
 
 <main class="container py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
-    <h1 class="h3 me-auto mb-0">Protokoll</h1>
+    <div class="page-head me-auto"><span class="page-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Protokoll</h1><div class="page-sub">Wer hat wann was gemacht.</div></div></div>
     <input class="form-control w-auto" type="search" placeholder="Suchen …" aria-label="Protokoll durchsuchen" oninput="render()" id="fQ">
     <select class="form-select w-auto" id="fUser" aria-label="Benutzer filtern" onchange="render()"></select>
     <select class="form-select w-auto" id="fArea" aria-label="Bereich filtern" onchange="render()"></select>
