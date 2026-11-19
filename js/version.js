@@ -1,6 +1,18 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = 'Beta 1.1.1';
+const APP_VERSION = '2.0.0';
 const CHANGELOG = [
+  {
+    version: '2.0.0', date: '18.11.2026', title: 'Neues Design und offizieller Start',
+    items: [
+      'Das Dashboard verlässt die Beta-Phase und ist jetzt offiziell veröffentlicht',
+      'Komplett neues Erscheinungsbild im Abendlicht der Ranch mit Fotohintergründen',
+      'Neue Menüleiste mit Symbolen, am Handy und Tablet als aufklappbares Menü',
+      'Übersicht mit Willkommens-Bereich und farbigen Kacheln',
+      'Farm-Auswahl mit Fotokarten für Hauptfarm und Nebenfarm',
+      'Neu gestaltete Login-Seite, Seitenköpfe mit Symbolen und überarbeitete Karten und Spalten',
+      'Aufgaben-Liste: Ein Tipp auf die ganze Karte öffnet die Aufgabe'
+    ]
+  },
   {
     version: 'Beta 1.1.1', date: '10.11.2026', title: 'Kleine Anpassungen',
     items: [

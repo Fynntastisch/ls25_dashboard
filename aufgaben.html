@@ -34,13 +34,15 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .add:hover{background:#efe9d8}
 </style>
 <link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <div id="topbar"></div>
 
 <main class="container-fluid px-4 py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
-    <h1 class="h3 me-auto mb-0">Aufgaben</h1>
+    <div class="page-head me-auto"><span class="page-icon"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Aufgaben</h1><div class="page-sub">Hier findest du alle anstehenden Aufgaben.</div></div></div>
     <input class="form-control w-auto" type="search" placeholder="Suchen …" aria-label="Aufgaben suchen" oninput="S.q=this.value;render()">
     <select class="form-select w-auto" aria-label="Farm filtern" onchange="S.farm=this.value;render()">
       <option value="alle">Alle Farmen</option><option value="haupt">Hauptfarm</option><option value="neben">Nebenfarm</option>
@@ -49,10 +51,10 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fMine" onchange="S.mine=this.checked;savePrefs();render()"><label class="form-check-label" for="fMine">Meine</label></div>
     <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fDone" onchange="S.hideDone=this.checked;savePrefs();render()"><label class="form-check-label" for="fDone">Erledigte ausblenden</label></div>
     <div class="btn-group view-toggle" role="group" aria-label="Ansicht">
-      <button class="btn btn-outline-dark" id="bBoard" onclick="setView('board')">Board</button>
-      <button class="btn btn-outline-dark" id="bList" onclick="setView('list')">Liste</button>
+      <button class="btn btn-outline-dark" id="bBoard" onclick="setView('board')" title="Board" aria-label="Board"><i class="bi bi-kanban" aria-hidden="true"></i></button>
+      <button class="btn btn-outline-dark" id="bList" onclick="setView('list')" title="Liste" aria-label="Liste"><i class="bi bi-list-ul" aria-hidden="true"></i></button>
     </div>
-    <button class="btn btn-hay" id="bNew" onclick="newTask('Offen')">Neue Aufgabe</button>
+    <button class="btn btn-hay" id="bNew" onclick="newTask('Offen')"><i class="bi bi-plus-lg" aria-hidden="true"></i> Neue Aufgabe</button>
   </div>
   <div id="view"></div>
 </main>
@@ -159,9 +161,9 @@ function listHtml(list){
   if(!list.length) return `<div class="panel p-4 text-center text-secondary">Keine Aufgaben gefunden. Ändere die Filter oder lege mit „Neue Aufgabe“ eine an.</div>`;
   return `<div class="panel p-3"><div class="table-responsive"><table class="table align-middle mb-0 stack">
   <thead><tr><th>Aufgabe</th><th>Status</th><th>Zuständig</th><th>Fällig</th><th>Priorität</th><th>Farm</th></tr></thead><tbody>
-  ${list.map(t=>`<tr>
-    <td data-label="Aufgabe"><a href="#" class="text-reset fw-semibold" onclick="editTask(${t.id});return false">${esc(t.title)}</a>${chips(t)?`<div class="meta mt-1">${chips(t)}</div>`:''}</td>
-    <td data-label="Status"><select class="form-select form-select-sm" aria-label="Status" ${can('tasks','edit')?'':'disabled'} onchange="setStatus(${t.id},this.value)">${STATUS.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select></td>
+  ${list.map(t=>`<tr class="row-click" onclick="editTask(${t.id})">
+    <td data-label="Aufgabe"><a href="#" class="text-reset fw-semibold" onclick="event.stopPropagation();editTask(${t.id});return false">${esc(t.title)}</a>${chips(t)?`<div class="meta mt-1">${chips(t)}</div>`:''}</td>
+    <td data-label="Status"><select class="form-select form-select-sm" aria-label="Status" ${can('tasks','edit')?'':'disabled'} onclick="event.stopPropagation()" onchange="setStatus(${t.id},this.value)">${STATUS.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select></td>
     <td data-label="Zuständig">${t.assignee?esc(dispName(t.assignee)):'–'}</td>
     <td data-label="Fällig">${t.due?`<span class="chip ${late(t)?'late':''}">${fmt(t.due)}</span>`:'–'}</td>
     <td data-label="Priorität">${t.prio}</td><td data-label="Farm">${FARMS[t.farm]}</td></tr>`).join('')}
