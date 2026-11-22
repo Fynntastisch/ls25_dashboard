@@ -65,10 +65,13 @@ body {
 /* Das Logo steht über dem Formular, ohne es zu verschieben (das Formular bleibt in der Mitte) */
 .login-logo {
   position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 16px;
-  height: clamp(70px, calc((100vh - 340px) / 2 - 16px), 215px);
-  height: clamp(70px, calc((100dvh - 340px) / 2 - 16px), 215px);
+  height: clamp(60px, calc((100vh - 440px) / 2 - 24px), 215px);
+  height: clamp(60px, calc((100dvh - 440px) / 2 - 24px), 215px);
   width: auto; max-width: 72vw; object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .7)); pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Sehr niedrige Bildschirme (z. B. Handy quer): kein Platz für das Logo */
+@media (max-height: 520px) { .login-logo { display: none; } }

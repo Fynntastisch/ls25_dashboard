@@ -1,2 +1,2 @@
-/docs
-/sql
+docs/*.txt
+sql/*.sql

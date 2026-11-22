@@ -24,6 +24,7 @@ a.stat:hover{transform:translateY(-3px);color:#fff}
 .news-link{color:#6b5d4d;text-decoration:none}
 .news-link:hover,.news-link:focus-visible{color:#2b2118;text-decoration:underline}
 </style>
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/responsive.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="css/theme.css">
@@ -36,7 +37,7 @@ a.stat:hover{transform:translateY(-3px);color:#fff}
     <div class="hero-text">
       <h1 class="hero-title" id="hello">Willkommen zurück!</h1>
       <div class="hero-divider" aria-hidden="true"><i class="bi bi-suit-diamond-fill"></i></div>
-      <p class="hero-sub">Deine Ranch. Deine Aufgaben.</p>
+      <p class="hero-sub" id="heroSub"><span class="placeholder-glow" aria-hidden="true"><span class="placeholder" style="width:240px"></span></span></p>
     </div>
     <div class="hero-tiles" id="stats"></div>
   </section>
@@ -73,8 +74,9 @@ function boot(){
   $('topbar').outerHTML=topbarHtml('uebersicht','Übersicht',{fluid:false});
   $('hello').textContent=`Willkommen zurück, ${dispName(me.name)}!`;
   const open=data.tasks.filter(t=>t.status!=='Erledigt');
-  const late=open.filter(t=>t.due&&t.due<today&&(me.role==='chef'||t.assignee===me.name));
-  const mine=open.filter(t=>t.assignee===me.name).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  const late=open.filter(t=>t.due&&t.due<today&&(me.role==='chef'||(t.assignees||[]).includes(me.name)));
+  const mine=open.filter(t=>(t.assignees||[]).includes(me.name)).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  $('heroSub').textContent=mine.length?`Du hast ${mine.length} offene ${mine.length===1?'Aufgabe':'Aufgaben'}.`:'Du hast keine offenen Aufgaben.';
   const cnt=f=>data.vehicles.filter(v=>v.farm===f).length;
   $('stats').innerHTML=[
     ['t-haupt','dashboard.html#haupt',cnt('haupt'),'Fahrzeuge Hauptfarm','truck'],
@@ -85,10 +87,12 @@ function boot(){
   if(me.role!=='chef') $('lateTitle').innerHTML='<i class="bi bi-exclamation-circle" aria-hidden="true"></i> Meine überfälligen Aufgaben';
   const row=t=>`<a class="d-flex justify-content-between align-items-center py-2 border-bottom text-reset text-decoration-none" href="aufgaben.html">
     <span class="fw-semibold">${esc(t.title)}</span>
-    <span>${t.assignee&&me.role==='chef'?`<span class="small text-secondary me-2">${esc(dispName(t.assignee))}</span>`:''}${t.due?`<span class="chip ${t.due<today?'late':''}">${fmt(t.due)}</span>`:''}</span></a>`;
+    <span>${me.role==='chef'&&(t.assignees||[]).length?`<span class="small text-secondary me-2">${esc(t.assignees.map(dispName).join(', '))}</span>`:''}${t.due?`<span class="chip ${t.due<today?'late':''}">${fmt(t.due)}</span>`:''}</span></a>`;
   $('mine').innerHTML=mine.slice(0,6).map(row).join('')||'<p class="text-secondary mb-0">Dir sind keine offenen Aufgaben zugewiesen.</p>';
   $('late').innerHTML=late.slice(0,6).map(row).join('')||'<p class="text-secondary mb-0">Nichts überfällig.</p>';
 }
+/* Platzhalter, bis die Daten da sind */
+$('topbar').innerHTML=skel.topbar();$('stats').innerHTML=skel.tiles();$('mine').innerHTML=skel.rows(3);$('late').innerHTML=skel.rows(3);$('news').innerHTML=skel.rows(2);
 init().then(()=>{data=DATA;me=ME;boot()});
 </script>
 </body>

@@ -1,6 +1,26 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.1.1';
 const CHANGELOG = [
+  {
+    version: '2.1.1', date: '22.11.2026', title: 'Korrekturen',
+    items: [
+      'Übersicht lädt wieder vollständig (Kacheln und Aufgaben blieben als Ladeanimation stehen)',
+      'Protokoll im Dunkelmodus ohne weißen Rand',
+      'Überfällige Aufgaben sind wieder rot markiert, in Hell und Dunkel'
+    ]
+  },
+  {
+    version: '2.1.0', date: '19.11.2026', title: 'Einstellungen, Profilbild und mehr',
+    items: [
+      'Neue Einstellungen-Seite: ein Klick auf deinen Namen oben in der Leiste',
+      'Hell- oder Dunkelmodus für Karten, Tabellen und Dialoge',
+      'Eigenes Profilbild, sichtbar in der Leiste, in den Aufgaben und in der Mitarbeiter-Liste',
+      'Aufgaben können mehreren Mitarbeitern und mehreren Fahrzeugen zugewiesen werden',
+      'Ladeplatzhalter statt leerer Flächen, solange Daten geladen werden',
+      'Übersicht zeigt, wie viele offene Aufgaben du hast',
+      'Login-Logo sitzt wieder richtig'
+    ]
+  },
   {
     version: '2.0.0', date: '18.11.2026', title: 'Neues Design und offizieller Start',
     items: [
