@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LS25 Einstellungen</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--soil:#2b2118;--field:#4f6b3a;--barn:#8c3b2a;--hay:#e0b43a;--paper:#f3efe4;--ink:#241c14}
+body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(img/bg.jpg) center/cover fixed;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh}
+.topbar{background:var(--soil);color:#f3efe4;border-bottom:4px solid var(--hay)}
+.topbar .btn-outline-light{--bs-btn-border-color:#8a7a66}
+.brand{font-weight:700}
+.btn-hay{background:var(--hay);border-color:var(--hay);color:var(--ink);font-weight:600}
+.btn-hay:hover{background:#c9a02e;border-color:#c9a02e}
+.btn:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.panel{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1)}
+.table th{font-weight:600;color:#6b5d4d;border-bottom-color:var(--soil)}
+.role{border-radius:4px;padding:.1rem .5rem;font-size:.85rem;font-weight:600;background:#efe9d8}
+.role.chef{background:var(--soil);color:var(--hay)}
+.role.dev{background:var(--field);color:#fff}
+.role.test{background:var(--barn);color:#fff}
+.post{background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(43,33,24,.1);padding:1.25rem 1.5rem;margin-bottom:1rem}
+.post h2{font-size:1.35rem}
+.post .body{white-space:pre-wrap;overflow-wrap:anywhere}
+.post-tile{cursor:pointer;transition:transform .15s}
+.post-tile:hover{transform:translateY(-2px)}
+.post-tile:focus-visible{outline:3px solid var(--hay);outline-offset:2px}
+.preview{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#4a3f33;overflow-wrap:anywhere}
+#rBody{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+<script src="js/theme-init.js"></script>
+<link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div id="topbar"></div>
+
+<main class="container py-4" style="max-width:760px">
+  <div class="page-head mb-3"><span class="page-icon"><i class="bi bi-gear" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Einstellungen</h1><div class="page-sub">Darstellung, Profilbild und Konto.</div></div></div>
+
+  <div class="panel p-4 mb-4">
+    <h2 class="h5 mb-3"><i class="bi bi-person-circle" aria-hidden="true"></i> Profilbild</h2>
+    <div class="d-flex flex-wrap align-items-center gap-3" id="avatarBox"></div>
+    <input type="file" id="avatarFile" accept="image/*" hidden>
+    <div class="form-text mt-2">Das Bild wird quadratisch zugeschnitten und stark verkleinert (ca. 20 KB). Alle im Dashboard sehen es.</div>
+  </div>
+
+  <div class="panel p-4 mb-4">
+    <h2 class="h5 mb-3"><i class="bi bi-circle-half" aria-hidden="true"></i> Darstellung</h2>
+    <div class="d-flex flex-wrap gap-3" role="radiogroup" aria-label="Darstellung">
+      <label class="theme-opt"><input type="radio" class="form-check-input mt-0" name="theme" value="light"><span class="swatch swatch-light"></span><span><strong>Hell</strong><br><span class="small text-secondary">Weiße, helle Karten</span></span></label>
+      <label class="theme-opt"><input type="radio" class="form-check-input mt-0" name="theme" value="dark"><span class="swatch swatch-dark"></span><span><strong>Dunkel</strong><br><span class="small text-secondary">Schwarze, dunkle Karten</span></span></label>
+    </div>
+  </div>
+
+  <div class="panel p-4">
+    <h2 class="h5 mb-3"><i class="bi bi-shield-lock" aria-hidden="true"></i> Konto</h2>
+    <div id="acct"></div>
+    <button class="btn btn-hay mt-3" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort ändern</button>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/version.js"></script>
+<script>
+let data,me,pending=null;   /* pending = neues, noch nicht gespeichertes Profilbild */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROLES={chef:'Chef',dev:'Developer',mitarbeiter:'Mitarbeiter',test:'Test'};
+const FARMS={haupt:'Hauptfarm',neben:'Nebenfarm',beide:'Beide Farmen'};
+function logout(){sb.auth.signOut().then(()=>location.href='index.html')}
+
+/* ---------- Profilbild ---------- */
+function renderAvatar(){
+  const has=!!me.avatar_v;
+  $('avatarBox').innerHTML=`<div>${pending?`<img class="avatar" src="${pending.url}" width="96" height="96" alt="Vorschau">`:avatarHtml(me,96)}</div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-outline-dark" onclick="$('avatarFile').click()"><i class="bi bi-image" aria-hidden="true"></i> Bild auswählen</button>
+    ${pending?'<button class="btn btn-hay" id="avSave" onclick="saveAvatar()">Speichern</button><button class="btn btn-outline-secondary" onclick="cancelAvatar()">Verwerfen</button>':''}
+    ${!pending&&has?'<button class="btn btn-outline-danger" onclick="removeAvatar()"><i class="bi bi-trash" aria-hidden="true"></i> Entfernen</button>':''}
+  </div>`;
+}
+async function toSquareJpeg(file,size){
+  let bmp;
+  try{bmp=await createImageBitmap(file)}catch(e){bmp=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)})}
+  const w=bmp.width||bmp.naturalWidth,h=bmp.height||bmp.naturalHeight,s=Math.min(w,h);
+  const c=document.createElement('canvas');c.width=c.height=size;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,size,size);
+  x.drawImage(bmp,(w-s)/2,(h-s)/2,s,s,0,0,size,size);
+  return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('Bild konnte nicht umgewandelt werden')),'image/jpeg',.85));
+}
+$('avatarFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(!f) return;
+  if(!f.type.startsWith('image/')) return showToast('Bitte wähle eine Bilddatei aus.','danger');
+  try{
+    const blob=await toSquareJpeg(f,256);
+    if(pending) URL.revokeObjectURL(pending.url);
+    pending={blob,url:URL.createObjectURL(blob)};
+    renderAvatar();
+  }catch(err){showToast('Das Bild konnte nicht gelesen werden.','danger')}
+});
+function cancelAvatar(){if(pending)URL.revokeObjectURL(pending.url);pending=null;renderAvatar()}
+async function saveAvatar(){
+  const btn=$('avSave');btn.disabled=true;
+  const up=await sb.storage.from('avatars').upload(me.id+'/avatar.jpg',pending.blob,{upsert:true,contentType:'image/jpeg',cacheControl:'3600'});
+  if(up.error){btn.disabled=false;return showToast('Hochladen fehlgeschlagen: '+up.error.message+' (Wurde supabase-update-8.sql ausgeführt?)','danger')}
+  const v=Date.now(),r=await sb.rpc('set_my_settings',{p_avatar_v:v});
+  if(r.error){btn.disabled=false;return showToast('Speichern fehlgeschlagen: '+r.error.message,'danger')}
+  me.avatar_v=v;URL.revokeObjectURL(pending.url);pending=null;
+  renderAvatar();refreshTopbar('','Einstellungen',{fluid:false});showToast('Profilbild gespeichert.');
+}
+async function removeAvatar(){
+  if(!confirm('Profilbild wirklich entfernen?')) return;
+  await sb.storage.from('avatars').remove([me.id+'/avatar.jpg']);
+  const r=await sb.rpc('set_my_settings',{p_avatar_v:0});
+  if(r.error) return showToast('Entfernen fehlgeschlagen: '+r.error.message,'danger');
+  me.avatar_v=0;renderAvatar();refreshTopbar('','Einstellungen',{fluid:false});showToast('Profilbild entfernt.');
+}
+
+/* ---------- Darstellung ---------- */
+document.querySelectorAll('input[name=theme]').forEach(r=>r.addEventListener('change',async()=>{
+  const v=r.value;applyTheme(v);me.theme=v;
+  const {error}=await sb.rpc('set_my_settings',{p_theme:v});
+  if(error) showToast('Nur auf diesem Gerät gespeichert: '+error.message,'warning');
+  else showToast('Darstellung gespeichert.');
+}));
+
+/* Platzhalter, bis die Daten da sind */
+$('topbar').innerHTML=skel.topbar();
+$('avatarBox').innerHTML='<div class="placeholder-glow d-flex align-items-center gap-3" role="status"><span class="visually-hidden">Wird geladen …</span><span class="placeholder rounded-circle" style="width:96px;height:96px"></span><span class="placeholder" style="width:180px;height:2.4rem"></span></div>';
+$('acct').innerHTML=skel.rows(3);
+
+init().then(()=>{
+  data=DATA;me=ME;
+  $('topbar').outerHTML=topbarHtml('','Einstellungen',{fluid:false});
+  document.querySelector('input[name=theme][value='+(me.theme==='dark'?'dark':'light')+']').checked=true;
+  renderAvatar();
+  $('acct').innerHTML=`<dl class="row mb-0">
+    <dt class="col-sm-4">Name</dt><dd class="col-sm-8">${esc(me.display||me.name)}</dd>
+    <dt class="col-sm-4">Login-Name</dt><dd class="col-sm-8">${esc(me.name)}</dd>
+    <dt class="col-sm-4">Rolle</dt><dd class="col-sm-8">${esc(ROLES[me.role]||me.role)}</dd>
+    ${['dev','test'].includes(me.role)?'':`<dt class="col-sm-4">Farm</dt><dd class="col-sm-8">${esc(FARMS[me.farm]||'–')}</dd><dt class="col-sm-4">Abteilung</dt><dd class="col-sm-8 mb-0">${esc(me.dept||'–')}</dd>`}
+  </dl>`;
+});
+</script>
+</body>
+
+<!-- 
+                    _,)
+            _..._.-;-'
+         .-'     `(
+        /      ;   \
+       ;.' ;`  ,;  ;
+      .'' ``. (  \ ;
+     / f_ _L \ ;  )\
+     \/|` '|\/;; <;/
+    ((; \_/  (()       Fynn Wintzen - 01.11.2026
+         "
+-->
+</html>

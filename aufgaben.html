@@ -33,14 +33,17 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .add{width:100%;border:2px dashed #b8ad94;background:transparent;border-radius:6px;padding:.4rem;color:#6b5d4d}
 .add:hover{background:#efe9d8}
 </style>
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <div id="topbar"></div>
 
 <main class="container-fluid px-4 py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
-    <h1 class="h3 me-auto mb-0">Aufgaben</h1>
+    <div class="page-head me-auto"><span class="page-icon"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Aufgaben</h1><div class="page-sub">Hier findest du alle anstehenden Aufgaben.</div></div></div>
     <input class="form-control w-auto" type="search" placeholder="Suchen …" aria-label="Aufgaben suchen" oninput="S.q=this.value;render()">
     <select class="form-select w-auto" aria-label="Farm filtern" onchange="S.farm=this.value;render()">
       <option value="alle">Alle Farmen</option><option value="haupt">Hauptfarm</option><option value="neben">Nebenfarm</option>
@@ -49,10 +52,10 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fMine" onchange="S.mine=this.checked;savePrefs();render()"><label class="form-check-label" for="fMine">Meine</label></div>
     <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="fDone" onchange="S.hideDone=this.checked;savePrefs();render()"><label class="form-check-label" for="fDone">Erledigte ausblenden</label></div>
     <div class="btn-group view-toggle" role="group" aria-label="Ansicht">
-      <button class="btn btn-outline-dark" id="bBoard" onclick="setView('board')">Board</button>
-      <button class="btn btn-outline-dark" id="bList" onclick="setView('list')">Liste</button>
+      <button class="btn btn-outline-dark" id="bBoard" onclick="setView('board')" title="Board" aria-label="Board"><i class="bi bi-kanban" aria-hidden="true"></i></button>
+      <button class="btn btn-outline-dark" id="bList" onclick="setView('list')" title="Liste" aria-label="Liste"><i class="bi bi-list-ul" aria-hidden="true"></i></button>
     </div>
-    <button class="btn btn-hay" id="bNew" onclick="newTask('Offen')">Neue Aufgabe</button>
+    <button class="btn btn-hay" id="bNew" onclick="newTask('Offen')"><i class="bi bi-plus-lg" aria-hidden="true"></i> Neue Aufgabe</button>
   </div>
   <div id="view"></div>
 </main>
@@ -66,11 +69,11 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     <div><label class="form-label" for="tCheckNew">Checkliste</label><div id="tCheck" class="vstack gap-1 mb-2"></div><div class="input-group"><input class="form-control" id="tCheckNew" placeholder="Unteraufgabe hinzufügen" onkeydown="if(event.key==='Enter'){event.preventDefault();addCheck()}"><button type="button" class="btn btn-outline-dark" onclick="addCheck()">Hinzufügen</button></div></div>
     <div class="row g-3">
       <div class="col-6"><label class="form-label" for="tStatus">Status</label><select class="form-select" id="tStatus"></select></div>
-      <div class="col-6"><label class="form-label" for="tAssignee">Zuständig</label><select class="form-select" id="tAssignee"></select></div>
-      <div class="col-6"><label class="form-label" for="tDue">Fällig am</label><input class="form-control" type="date" id="tDue"></div>
       <div class="col-6"><label class="form-label" for="tPrio">Priorität</label><select class="form-select" id="tPrio"></select></div>
+      <div class="col-6"><label class="form-label" for="tDue">Fällig am</label><input class="form-control" type="date" id="tDue"></div>
       <div class="col-6"><label class="form-label" for="tFarm">Farm</label><select class="form-select" id="tFarm"></select></div>
-      <div class="col-6"><label class="form-label" for="tVehicle">Fahrzeug</label><select class="form-select" id="tVehicle"></select></div>
+      <div class="col-12"><label class="form-label">Zuständig</label><div id="pickUsers"></div></div>
+      <div class="col-12"><label class="form-label">Fahrzeuge</label><div id="pickVeh"></div></div>
       <div class="col-12"><label class="form-label" for="tLabels">Labels</label><input class="form-control" id="tLabels" placeholder="mit Komma trennen, z. B. Ernte, Wartung"></div>
     </div>
   </div>
@@ -105,17 +108,17 @@ function filtered(){
   const q=S.q.trim().toLowerCase();
   return data.tasks.filter(t=>
     (S.farm==='alle'||t.farm===S.farm||t.farm==='beide')&&
-    (!S.mine||t.assignee===me.name)&&
+    (!S.mine||(t.assignees||[]).includes(me.name))&&
     (!S.hideDone||t.status!=='Erledigt')&&(!S.label||(t.labels||[]).includes(S.label))&&
-    (!q||[t.title,t.desc,t.assignee].join(' ').toLowerCase().includes(q)))
+    (!q||[t.title,t.desc,(t.assignees||[]).map(dispName).join(' ')].join(' ').toLowerCase().includes(q)))
     .sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
 }
 function setView(v){S.view=v;render()}
 function late(t){return t.due&&t.due<today()&&t.status!=='Erledigt'}
-const avatar=t=>t.assignee?`<span class="av" title="${esc(dispName(t.assignee))}">${esc(dispName(t.assignee)[0].toUpperCase())}</span>`:'';
+const avatars=t=>{const a=(t.assignees||[]).map(userByName).filter(Boolean);if(!a.length)return '';return `<span class="av-stack" title="${esc(a.map(u=>dispName(u.name)).join(', '))}">${a.slice(0,3).map(u=>avatarHtml(u,26)).join('')}${a.length>3?`<span class="avatar avatar-ph" style="width:26px;height:26px;font-size:.7rem">+${a.length-3}</span>`:''}</span>`};
 
-const veh=t=>data.vehicles.find(v=>v.id===t.vehicle);
-function chips(t){const v=veh(t),c=t.checklist||[];return (v?`<span class="chip" title="${esc(v.marke+' '+v.modell)}">${esc(v.kz)}</span>`:'')+(c.length?`<span class="chip">✓ ${c.filter(x=>x.done).length}/${c.length}</span>`:'')+(t.labels||[]).map(l=>`<span class="chip">#${esc(l)}</span>`).join('')}
+const vehs=t=>(t.vehicles||[]).map(id=>data.vehicles.find(v=>v.id===id)).filter(Boolean);
+function chips(t){const vs=vehs(t),c=t.checklist||[];return vs.slice(0,2).map(v=>`<span class="chip" title="${esc(v.marke+' '+v.modell)}">${esc(v.kz)}</span>`).join('')+(vs.length>2?`<span class="chip" title="${esc(vs.slice(2).map(v=>v.kz).join(', '))}">+${vs.length-2}</span>`:'')+(c.length?`<span class="chip">✓ ${c.filter(x=>x.done).length}/${c.length}</span>`:'')+(t.labels||[]).map(l=>`<span class="chip">#${esc(l)}</span>`).join('')}
 function card(t){return `
 <div class="card-task p-${t.prio} ${t.status==='Erledigt'?'done':''}" tabindex="0" draggable="true" ondragstart="drag(event,${t.id})" onclick="editTask(${t.id})" onkeydown="if(event.key==='Enter')editTask(${t.id})">
   <div class="t">${esc(t.title)}</div>
@@ -123,7 +126,7 @@ function card(t){return `
     ${t.due?`<span class="chip ${late(t)?'late':''}">${late(t)?'Überfällig · ':''}${fmt(t.due)}</span>`:''}
     <span class="chip">${FARMS[t.farm]}</span>
     ${chips(t)}
-    ${avatar(t)}
+    ${avatars(t)}
   </div>
   <select class="form-select form-select-sm mt-2 d-md-none" aria-label="Status ändern" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()" onchange="setStatus(${t.id},this.value)">${STATUS.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select>
 </div>`}
@@ -159,10 +162,10 @@ function listHtml(list){
   if(!list.length) return `<div class="panel p-4 text-center text-secondary">Keine Aufgaben gefunden. Ändere die Filter oder lege mit „Neue Aufgabe“ eine an.</div>`;
   return `<div class="panel p-3"><div class="table-responsive"><table class="table align-middle mb-0 stack">
   <thead><tr><th>Aufgabe</th><th>Status</th><th>Zuständig</th><th>Fällig</th><th>Priorität</th><th>Farm</th></tr></thead><tbody>
-  ${list.map(t=>`<tr>
-    <td data-label="Aufgabe"><a href="#" class="text-reset fw-semibold" onclick="editTask(${t.id});return false">${esc(t.title)}</a>${chips(t)?`<div class="meta mt-1">${chips(t)}</div>`:''}</td>
-    <td data-label="Status"><select class="form-select form-select-sm" aria-label="Status" ${can('tasks','edit')?'':'disabled'} onchange="setStatus(${t.id},this.value)">${STATUS.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select></td>
-    <td data-label="Zuständig">${t.assignee?esc(dispName(t.assignee)):'–'}</td>
+  ${list.map(t=>`<tr class="row-click" onclick="editTask(${t.id})">
+    <td data-label="Aufgabe"><a href="#" class="text-reset fw-semibold" onclick="event.stopPropagation();editTask(${t.id});return false">${esc(t.title)}</a>${chips(t)?`<div class="meta mt-1">${chips(t)}</div>`:''}</td>
+    <td data-label="Status"><select class="form-select form-select-sm" aria-label="Status" ${can('tasks','edit')?'':'disabled'} onclick="event.stopPropagation()" onchange="setStatus(${t.id},this.value)">${STATUS.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td data-label="Zuständig">${(t.assignees||[]).length?t.assignees.map(n=>esc(dispName(n))).join(', '):'–'}</td>
     <td data-label="Fällig">${t.due?`<span class="chip ${late(t)?'late':''}">${fmt(t.due)}</span>`:'–'}</td>
     <td data-label="Priorität">${t.prio}</td><td data-label="Farm">${FARMS[t.farm]}</td></tr>`).join('')}
   </tbody></table></div></div>`}
@@ -177,6 +180,29 @@ let cl=[];
 function renderCheck(){$('tCheck').innerHTML=cl.map((c,i)=>`<div class="d-flex align-items-center gap-2"><input class="form-check-input mt-0" type="checkbox" id="c${i}" ${c.done?'checked':''} onchange="cl[${i}].done=this.checked"><label class="flex-grow-1" for="c${i}">${esc(c.text)}</label><button type="button" class="btn btn-sm btn-outline-danger py-0" aria-label="Entfernen" onclick="cl.splice(${i},1);renderCheck()">×</button></div>`).join('')}
 function addCheck(){const v=$('tCheckNew').value.trim();if(!v)return;cl.push({text:v,done:false});$('tCheckNew').value='';renderCheck()}
 
+/* Mehrfachauswahl für Zuständige und Fahrzeuge */
+const pick={};
+function makePick(key,box,items,selected,addLabel){
+  pick[key]={box,items,sel:new Set(selected)};
+  $(box).innerHTML=`<div class="pick-chips"></div><button type="button" class="btn btn-sm btn-outline-dark" onclick="pickToggle('${key}')"><i class="bi bi-plus-lg" aria-hidden="true"></i> ${addLabel}</button>
+  <div class="pick-panel border rounded mt-2 p-2" hidden><input class="form-control form-control-sm mb-2" type="search" placeholder="Suchen …" aria-label="Suchen" oninput="pickRender('${key}',this.value)"><div class="pick-list"></div></div>`;
+  pickRender(key);
+}
+function pickRender(key,filter){
+  const p=pick[key],root=$(p.box);
+  root.querySelector('.pick-chips').innerHTML=[...p.sel].map(id=>{const it=p.items.find(i=>i.id===id);return it?`<span class="pick-chip">${it.avatar||''}${esc(it.label)}<button type="button" aria-label="${esc(it.label)} entfernen" onclick="pickSet('${key}','${esc(String(id))}',false)">×</button></span>`:''}).join('');
+  const q=(filter??root.querySelector('input[type=search]').value).toLowerCase();
+  root.querySelector('.pick-list').innerHTML=p.items.filter(i=>!q||(i.label+' '+(i.sub||'')).toLowerCase().includes(q)).map(i=>`<label><input class="form-check-input mt-0" type="checkbox" ${p.sel.has(i.id)?'checked':''} onchange="pickSet('${key}','${esc(String(i.id))}',this.checked)">${i.avatar||''}<span>${esc(i.label)}</span>${i.sub?`<span class="text-secondary small ms-auto">${esc(i.sub)}</span>`:''}</label>`).join('')||'<div class="text-secondary small p-2">Nichts gefunden.</div>';
+}
+function pickSet(key,sid,on){const p=pick[key],it=p.items.find(i=>String(i.id)===sid);if(!it)return;on?p.sel.add(it.id):p.sel.delete(it.id);pickRender(key)}
+function pickToggle(key){const panel=$(pick[key].box).querySelector('.pick-panel');panel.hidden=!panel.hidden;if(!panel.hidden)panel.querySelector('input').focus()}
+function initPickers(t){
+  const sel=t.assignees||[];
+  makePick('users','pickUsers',data.users.filter(u=>u.active||sel.includes(u.name)).map(u=>({id:u.name,label:dispName(u.name),sub:u.display&&u.display!==u.name?u.name:'',avatar:avatarHtml(u,22)})),sel,'Mitarbeiter hinzufügen');
+  const vs=data.vehicles.slice().sort((a,b)=>a.farm.localeCompare(b.farm)||(a.marke+a.modell).localeCompare(b.marke+b.modell,'de')).map(v=>({id:v.id,label:v.marke+' '+v.modell,sub:v.kz+' · '+(FARMS[v.farm]||v.farm)}));
+  makePick('veh','pickVeh',vs,t.vehicles||[],'Fahrzeug hinzufügen');
+}
+
 /* Dialog */
 const tm=()=>bootstrap.Modal.getOrCreateInstance($('taskModal'));
 const opts=(arr,sel,lab=x=>x)=>arr.map(x=>`<option value="${esc(Array.isArray(x)?x[0]:x)}" ${(Array.isArray(x)?x[0]:x)===sel?'selected':''}>${esc(lab(x))}</option>`).join('');
@@ -185,20 +211,19 @@ function fillForm(t){
   $('tStatus').innerHTML=opts(STATUS,t.status);
   $('tPrio').innerHTML=opts(PRIO,t.prio);
   $('tFarm').innerHTML=opts(Object.entries(FARMS),t.farm,x=>x[1]);
-  $('tAssignee').innerHTML=`<option value="">Nicht zugewiesen</option>`+opts(data.users.filter(u=>u.active).map(u=>u.name),t.assignee,dispName);
+  initPickers(t);
   cl=(t.checklist||[]).map(c=>({...c}));renderCheck();
-  $('tVehicle').innerHTML='<option value="">Kein Fahrzeug</option>'+data.vehicles.map(v=>`<option value="${v.id}" ${v.id===t.vehicle?'selected':''}>${esc(v.marke+' '+v.modell+' ('+v.kz+')')}</option>`).join('');
   $('tLabels').value=(t.labels||[]).join(', ');
   $('tDel').hidden=!(t.id&&canDelete());
   $('tTitle').textContent=t.id?'Aufgabe bearbeiten':'Neue Aufgabe';
   const ro=!!t.id&&!can('tasks','edit');   /* ohne Bearbeiten-Recht nur ansehen */
-  document.querySelectorAll('#taskModal input:not([type=hidden]),#taskModal select,#taskModal textarea,#taskModal .btn-hay').forEach(e=>e.disabled=ro);
+  document.querySelectorAll('#taskModal input:not([type=hidden]),#taskModal select,#taskModal textarea,#taskModal .btn-hay,#taskModal .pick button').forEach(e=>e.disabled=ro);
   tm().show();
 }
-function newTask(st){if(!can('tasks','add'))return;fillForm({title:'',desc:'',status:st,assignee:'',due:'',prio:'Normal',farm:S.farm==='alle'?'beide':S.farm})}
+function newTask(st){if(!can('tasks','add'))return;fillForm({title:'',desc:'',status:st,assignees:[],vehicles:[],due:'',prio:'Normal',farm:S.farm==='alle'?'beide':S.farm})}
 function editTask(id){fillForm(data.tasks.find(t=>t.id===id))}
 function saveTask(e){e.preventDefault();
-  const o={title:$('tName').value.trim(),desc:$('tDesc').value.trim(),status:$('tStatus').value,assignee:$('tAssignee').value,due:$('tDue').value,prio:$('tPrio').value,farm:$('tFarm').value,vehicle:Number($('tVehicle').value)||null,labels:[...new Set($('tLabels').value.split(',').map(x=>x.trim()).filter(Boolean))],checklist:cl};
+  const o={title:$('tName').value.trim(),desc:$('tDesc').value.trim(),status:$('tStatus').value,assignees:[...pick.users.sel],due:$('tDue').value,prio:$('tPrio').value,farm:$('tFarm').value,vehicles:[...pick.veh.sel],labels:[...new Set($('tLabels').value.split(',').map(x=>x.trim()).filter(Boolean))],checklist:cl};
   const id=Number($('tId').value);
   if(id)Object.assign(data.tasks.find(t=>t.id===id),o);else data.tasks.push({id:Date.now(),...o});
   save();tm().hide();render()}
@@ -207,6 +232,8 @@ function delTask(){
   const id=Number($('tId').value),t=data.tasks.find(x=>x.id===id);
   if(confirm(`Aufgabe „${t.title}“ wirklich löschen?`)){data.tasks=data.tasks.filter(x=>x.id!==id);save();tm().hide();render()}}
 
+/* Platzhalter, bis die Daten da sind */
+$('topbar').innerHTML=skel.topbar();$('view').innerHTML=skel.board();
 init().then(()=>{data=DATA;me=ME;$('topbar').outerHTML=topbarHtml('aufgaben','Aufgaben',{fluid:true});$('bNew').hidden=!can('tasks','add');loadPrefs();
   if(!can('tasks','view')){$('view').innerHTML='<div class="panel p-4 text-center text-secondary">Du hast keinen Zugriff auf die Aufgaben.</div>';return}
   render()});

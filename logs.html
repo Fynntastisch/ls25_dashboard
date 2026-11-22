@@ -24,14 +24,17 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .post h2{font-size:1.35rem}
 .post .body{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <div id="topbar"></div>
 
 <main class="container py-4">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3 toolbar">
-    <h1 class="h3 me-auto mb-0">Protokoll</h1>
+    <div class="page-head me-auto"><span class="page-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Protokoll</h1><div class="page-sub">Wer hat wann was gemacht.</div></div></div>
     <input class="form-control w-auto" type="search" placeholder="Suchen …" aria-label="Protokoll durchsuchen" oninput="render()" id="fQ">
     <select class="form-select w-auto" id="fUser" aria-label="Benutzer filtern" onchange="render()"></select>
     <select class="form-select w-auto" id="fArea" aria-label="Bereich filtern" onchange="render()"></select>
@@ -43,7 +46,7 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     </select>
     <button class="btn btn-outline-danger" onclick="purge()">Löschen</button>
   </div>
-  <div class="panel p-3" style="background:#fff;border-radius:6px"><div id="logBox"></div>
+  <div class="panel p-3"><div id="logBox"></div>
     <div class="text-center mt-3"><button class="btn btn-outline-dark" id="bMore" onclick="load()" hidden>Ältere Einträge laden</button></div></div>
 </main>
 
@@ -91,6 +94,8 @@ function render(){
     </tbody></table></div>`:'<p class="text-secondary text-center mb-0">Keine Einträge gefunden.</p>';
 }
 
+/* Platzhalter, bis die Daten da sind */
+$('topbar').innerHTML=skel.topbar();$('logBox').innerHTML=skel.table(8);
 init({roles:['chef','dev']}).then(()=>{
   $('topbar').outerHTML=topbarHtml('logs','Protokoll',{fluid:false});
   $('purgeBox').hidden=ME.role!=='chef';

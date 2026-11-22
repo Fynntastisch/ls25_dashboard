@@ -13,6 +13,23 @@ let ME = null, DATA = null;
 const UIDS = {}, NAMES = {}, SNAP = { vehicles: new Map(), tasks: new Map(), posts: new Map() };
 const getSessionUser = () => ME;
 
+/* Hell/Dunkel: wird im Browser gemerkt (sofort beim Laden) und im Profil gespeichert (gilt auf allen Geräten) */
+function applyTheme(t) {
+  t = t === 'dark' ? 'dark' : 'light';
+  try { localStorage.setItem('ls25_theme', t); } catch (e) {}
+  document.documentElement.setAttribute('data-bs-theme', t);
+}
+
+/* Profilbilder */
+const userByName = n => DATA && DATA.users.find(u => u.name === n);
+const avatarUrl = u => (u && u.avatar_v) ? `${SUPABASE_URL}/storage/v1/object/public/avatars/${u.id}/avatar.jpg?v=${u.avatar_v}` : '';
+function avatarHtml(u, size = 28) {
+  const url = avatarUrl(u);
+  if (url) return `<img class="avatar" src="${url}" width="${size}" height="${size}" alt="" loading="lazy">`;
+  const nm = u ? (u.display || u.name || '?') : '?';
+  return `<span class="avatar avatar-ph" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .45)}px" aria-hidden="true">${escapeHtml(nm.charAt(0).toUpperCase())}</span>`;
+}
+
 /* Anzeigename zu einem Benutzernamen (ohne Anzeigenamen bleibt der Benutzername) */
 function dispName(n) {
   const u = DATA && DATA.users.find(x => x.name === n);
@@ -28,13 +45,15 @@ function can(area, action) {
 const vRow = v => ({ id: v.id, farm: v.farm, cat: v.cat, marke: v.marke, modell: v.modell, kz: v.kz, gebiet: v.gebiet || '' });
 const vLocal = r => ({ id: r.id, farm: r.farm, cat: r.cat, marke: r.marke, modell: r.modell, kz: r.kz, gebiet: r.gebiet || '' });
 const tRow = (t, vids) => ({
-  id: t.id, title: t.title, descr: t.desc || '', status: t.status, assignee: UIDS[t.assignee] || null,
-  due: t.due || null, prio: t.prio, farm: t.farm, vehicle: vids.has(t.vehicle) ? t.vehicle : null,
+  id: t.id, title: t.title, descr: t.desc || '', status: t.status,
+  assignees: (t.assignees || []).map(n => UIDS[n]).filter(Boolean),
+  due: t.due || null, prio: t.prio, farm: t.farm, vehicles: (t.vehicles || []).filter(id => vids.has(id)),
   labels: t.labels || [], checklist: t.checklist || []
 });
 const tLocal = r => ({
-  id: r.id, title: r.title, desc: r.descr || '', status: r.status, assignee: NAMES[r.assignee] || '',
-  due: r.due || '', prio: r.prio, farm: r.farm, vehicle: r.vehicle, labels: r.labels || [], checklist: r.checklist || []
+  id: r.id, title: r.title, desc: r.descr || '', status: r.status,
+  assignees: (r.assignees || []).map(id => NAMES[id]).filter(Boolean),
+  due: r.due || '', prio: r.prio, farm: r.farm, vehicles: (r.vehicles || []).map(Number), labels: r.labels || [], checklist: r.checklist || []
 });
 
 const pRow = p => ({ id: p.id, title: p.title, body: p.body || '', author: UIDS[p.author] || null, created_at: p.created, updated_at: p.updated });
@@ -64,9 +83,10 @@ async function init(opts = {}) {
   const err = pr.error || ve.error || ta.error;
   if (err) { alert('Die Daten konnten nicht geladen werden: ' + err.message); return never; }
 
-  const users = pr.data.map(u => ({ id: u.id, name: u.username, role: u.role, farm: u.farm, dept: u.dept, perms: u.perms, active: u.active, display: u.display_name || '' }));
+  const users = pr.data.map(u => ({ id: u.id, name: u.username, role: u.role, farm: u.farm, dept: u.dept, perms: u.perms, active: u.active, display: u.display_name || '', theme: u.theme || 'light', avatar_v: Number(u.avatar_v) || 0 }));
   users.forEach(u => { UIDS[u.name] = u.id; NAMES[u.id] = u.name; });
   ME = users.find(u => u.id === me.id);
+  applyTheme(ME.theme);
   DATA = { users, vehicles: ve.data.map(vLocal), tasks: ta.data.map(tLocal), posts: (po.error ? [] : po.data).map(pLocal) };
   takeSnapshot();
 

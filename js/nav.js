@@ -2,38 +2,76 @@
 function navLinks(active) {
   if (!ME) return '';
   const today = new Date().toLocaleDateString('sv');
-  const late = DATA.tasks.filter(t => t.due && t.due < today && t.status !== 'Erledigt' && (ME.role === 'chef' || t.assignee === ME.name)).length;
-  const items = [['uebersicht.html', 'Übersicht', 'uebersicht']];
-  if (can('vehicles', 'view')) items.push(['dashboard.html', 'Fuhrpark', 'fuhrpark']);
-  if (can('tasks', 'view')) items.push(['aufgaben.html', 'Aufgaben', 'aufgaben']);
-  if (can('posts', 'view')) items.push(['infos.html', 'Infos', 'infos']);
+  const late = DATA.tasks.filter(t => t.due && t.due < today && t.status !== 'Erledigt' && (ME.role === 'chef' || (t.assignees || []).includes(ME.name))).length;
+  const items = [['uebersicht.html', 'Übersicht', 'uebersicht', 'house-door']];
+  if (can('vehicles', 'view')) items.push(['dashboard.html', 'Fuhrpark', 'fuhrpark', 'truck']);
+  if (can('tasks', 'view')) items.push(['aufgaben.html', 'Aufgaben', 'aufgaben', 'clipboard-check']);
+  if (can('posts', 'view')) items.push(['infos.html', 'Infos', 'infos', 'info-circle']);
   if (ME.role === 'chef' || ME.role === 'dev') {
-    items.push(['mitarbeiter.html', 'Mitarbeiter', 'mitarbeiter']);
-    items.push(['logs.html', 'Protokoll', 'logs']);
+    items.push(['mitarbeiter.html', 'Mitarbeiter', 'mitarbeiter', 'people']);
+    items.push(['logs.html', 'Protokoll', 'logs', 'journal-text']);
   }
-  return items.map(([h, n, k]) =>
-    `<a class="btn btn-sm ${k === active ? 'btn-hay' : 'btn-outline-light'}" href="${h}">${n}${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`).join('');
+  return items.map(([h, n, k, i]) =>
+    `<a class="navi${k === active ? ' active' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}><i class="bi bi-${i}" aria-hidden="true"></i><span>${n}</span>${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`).join('');
 }
 
-/* Obere Leiste (Bootstrap-Navbar): am PC alles in einer Zeile, auf dem Handy Hamburger-Button und aufklappbares Menü */
+/* Obere Leiste (Bootstrap-Navbar): am PC alles in einer Zeile, auf Handy und Tablet Hamburger-Button mit aufklappbarem Menü */
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function topbarHtml(active, title, opts = {}) {
   const who = escapeHtml(dispName(ME.name)) + ' (' + escapeHtml(ME.role) + ')';
-  const farm = opts.farmSwitch ? '<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat=\'Alle\';render()">Farm wechseln</button>' : '';
-  const acts = farm + '<button class="btn btn-sm btn-outline-light" onclick="openPw()">Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden</button>';
-  return `<nav class="navbar navbar-expand-md topbar" data-bs-theme="dark">
-  <div class="${opts.fluid ? 'container-fluid px-3 px-md-4' : 'container'} gap-2">
-    <a class="navbar-brand brand mb-0 py-0 fs-6 d-flex align-items-center gap-2" href="uebersicht.html" title="Zur Übersicht"><img class="brand-logo" src="img/logo-nav.png" alt="Elmcreek Ranch"><span class="opacity-75 fw-normal">${title ? '· ' + escapeHtml(title) : ''}</span></a>
+  const farm = opts.farmSwitch ? '<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat=\'Alle\';render()"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Farm wechseln</button>' : '';
+  const acts = farm + '<button class="btn btn-sm btn-outline-light" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden <i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>';
+  return `<nav class="navbar navbar-expand-lg topbar" data-bs-theme="dark" aria-label="Hauptmenü">
+  <div class="${opts.fluid ? 'container-fluid px-3 px-lg-4' : 'container'} gap-2">
+    <a class="navbar-brand brand" href="uebersicht.html" title="Zur Übersicht"><img class="brand-logo" src="img/logo-nav.png" alt="Elmcreek Ranch, zur Übersicht"></a>
     <button class="navbar-toggler order-2" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Menü öffnen oder schließen"><span class="navbar-toggler-icon"></span></button>
-    <div class="collapse navbar-collapse order-3 order-md-0" id="navMenu">
-      <div class="navl d-flex flex-column flex-md-row gap-1 me-md-auto py-2 py-md-0">${navLinks(active)}</div>
-      <div class="menu-actions d-md-none vstack gap-1 border-top border-secondary pt-2">${acts}</div>
+    <div class="collapse navbar-collapse order-3 order-lg-0" id="navMenu">
+      <div class="navl d-flex flex-column flex-lg-row me-lg-auto py-2 py-lg-0">${navLinks(active)}</div>
+      <div class="menu-actions d-lg-none vstack gap-2 pt-2 border-top border-secondary">${acts}</div>
     </div>
-    <span class="who small opacity-75 order-1 order-md-0 ms-auto ms-md-0">${who}</span>
-    <div class="d-none d-md-flex align-items-center gap-2">${acts}</div>
+    <a class="who small order-1 order-lg-0 ms-auto ms-lg-0" href="einstellungen.html" title="Einstellungen und Profilbild">${avatarHtml(ME, 28)} <span>${who}</span></a>
+    <div class="d-none d-lg-flex align-items-center gap-2">${acts}</div>
   </div>
 </nav>`;
 }
+
+/* Leiste neu aufbauen, z. B. nach dem Ändern des Profilbilds */
+function refreshTopbar(active, title, opts) {
+  const el = document.querySelector('nav.topbar');
+  if (el) el.outerHTML = topbarHtml(active, title, opts);
+}
+
+/* Platzhalter (Bootstrap „placeholder“) für alles, was erst geladen werden muss */
+const skel = {
+  loading: '<span class="visually-hidden">Wird geladen …</span>',
+  topbar() {
+    return `<nav class="navbar topbar" aria-hidden="true"><div class="container py-1"><img class="brand-logo" src="img/logo-nav.png" alt="">
+      <span class="placeholder-glow d-none d-lg-flex gap-3 ms-4 me-auto"><span class="placeholder rounded" style="width:90px;height:22px"></span><span class="placeholder rounded" style="width:80px;height:22px"></span><span class="placeholder rounded" style="width:90px;height:22px"></span></span>
+      <span class="placeholder-glow ms-auto"><span class="placeholder rounded-pill" style="width:130px;height:28px"></span></span></div></nav>`;
+  },
+  rows(n = 3) {
+    return `<div class="placeholder-glow" role="status">${this.loading}${Array.from({ length: n }, () => '<div class="py-2 border-bottom"><span class="placeholder col-7"></span><span class="placeholder col-2 ms-2"></span></div>').join('')}</div>`;
+  },
+  tiles(n = 4) {
+    return Array.from({ length: n }, () => '<div class="placeholder-glow"><span class="placeholder tile-ph"></span></div>').join('');
+  },
+  table(rows = 5) {
+    return `<div class="placeholder-glow" role="status">${this.loading}<span class="placeholder col-12 mb-3" style="height:1.6rem"></span>${Array.from({ length: rows }, () => '<span class="placeholder col-12 mb-2" style="height:1.9rem"></span>').join('')}</div>`;
+  },
+  cards(n = 3) {
+    return Array.from({ length: n }, () => '<div class="post placeholder-glow" role="status"><span class="placeholder col-6 mb-2" style="height:1.5rem"></span><span class="placeholder col-4 d-block mb-3"></span><span class="placeholder col-12 d-block"></span><span class="placeholder col-10 d-block"></span></div>').join('');
+  },
+  board() {
+    const col = '<div class="col-status placeholder-glow"><span class="placeholder col-5 mb-3 d-block" style="height:1.4rem"></span><div class="card-task"><span class="placeholder col-8 d-block mb-2"></span><span class="placeholder col-5"></span></div><div class="card-task"><span class="placeholder col-7 d-block mb-2"></span><span class="placeholder col-4"></span></div></div>';
+    return `<div class="row g-3" role="status">${this.loading}${[1, 2, 3].map(() => `<div class="col-md-4">${col}</div>`).join('')}</div>`;
+  },
+  accordion(n = 3) {
+    return Array.from({ length: n }, () => '<div class="accordion-item placeholder-glow p-3" role="status"><span class="placeholder col-4"></span><span class="placeholder col-2 ms-2"></span></div>').join('');
+  },
+  fleet() {
+    return `<div class="page-head mb-3 placeholder-glow" role="status">${this.loading}<span class="placeholder rounded-3" style="width:48px;height:48px"></span><span class="placeholder col-3" style="height:1.8rem"></span></div><div class="panel p-3">${this.table(6)}</div>`;
+  }
+};
 
 /* Kurze Meldung unten rechts (Bootstrap-Toast), verschwindet nach ein paar Sekunden */
 function showToast(msg, kind = 'success') {

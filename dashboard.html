@@ -29,7 +29,10 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 .btn-hay{background:var(--hay);border-color:var(--hay);color:var(--ink);font-weight:600}
 .btn-hay:hover{background:#c9a02e;border-color:#c9a02e}
 </style>
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/responsive.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <div id="app"></div>
@@ -77,19 +80,21 @@ const canDelete=()=>can('vehicles','delete');
 function render(){
   const a=$('app');
   if(!S.user) return;
+  document.body.classList.toggle('bg-farm',!S.farm);
   if(!S.farm) return a.innerHTML=farmView();
   a.innerHTML=fleetView();
 }
 
 function farmView(){return `
 ${topbar('Farm wählen')}
-<main class="container py-5" style="max-width:900px">
-  <h1 class="h3 mb-4">Welche Farm möchtest du ansehen?</h1>
+<main class="container py-5" style="max-width:960px">
+  <h1 class="h3 mb-4 text-center">Welche Farm möchtest du ansehen?</h1>
   <div class="row g-4">
     ${Object.entries(FARMS).map(([k,n])=>`
-    <div class="col-md-6"><button class="farm-btn farm-${k}" onclick="openFarm('${k}')">
-      <h2>${n}</h2>
-      <p class="mb-0">${data.vehicles.filter(v=>v.farm===k).length} Fahrzeuge im Fuhrpark</p>
+    <div class="col-md-6"><button class="farm-card ${k}" onclick="openFarm('${k}')" aria-label="${n} öffnen">
+      <img src="img/farm-${k}.webp" alt="" loading="lazy">
+      <span class="farm-card-body"><span class="farm-card-title">${n}</span><span class="farm-card-meta"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${data.vehicles.filter(v=>v.farm===k).length} Fahrzeuge im Fuhrpark</span></span>
+      <span class="farm-card-go" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
     </button></div>`).join('')}
   </div>
 </main>`}
@@ -103,7 +108,7 @@ function fleetView(){
 ${topbar(FARMS[S.farm])}
 <main class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0">Fuhrpark ${FARMS[S.farm]}</h1>
+    <div class="page-head"><span class="page-icon"><i class="bi bi-truck" aria-hidden="true"></i></span><div><h1 class="h3 mb-0">Fuhrpark ${FARMS[S.farm]}</h1><div class="page-sub">Fahrzeuge dieser Farm im Überblick.</div></div></div>
     <div class="d-flex gap-2 flex-grow-1 flex-sm-grow-0 fleet-actions">
       <input class="form-control" type="search" placeholder="Suchen …" aria-label="Fahrzeuge suchen" value="${esc(S.q)}" oninput="S.q=this.value;updateTable()">
       ${can('vehicles','add')?`<button class="btn btn-hay text-nowrap" onclick="newVehicle()">Fahrzeug hinzufügen</button>`:''}
@@ -171,6 +176,8 @@ function delVehicle(id){
   if(confirm(`${v.marke} ${v.modell} (${v.kz}) wirklich löschen?`)){data.vehicles=data.vehicles.filter(x=>x.id!==id);save();render()}}
 
 
+/* Platzhalter, bis die Daten da sind */
+$('app').innerHTML=skel.topbar()+'<main class="container py-4">'+skel.fleet()+'</main>';
 init().then(()=>{data=DATA;S.user=ME;
   if(!can('vehicles','view')){$('app').innerHTML=topbar('Fuhrpark')+'<main class="container py-5"><p class="text-secondary">Du hast keinen Zugriff auf den Fuhrpark.</p></main>';return}
   render()});
