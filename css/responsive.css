@@ -6,9 +6,9 @@
 @media (max-width: 575.98px) {
   .stack, .stack tbody, .stack tr { display: block; }
   .stack thead { display: none; }
-  .stack tbody tr { border: 1px solid #e0d9c6; border-radius: 6px; padding: .5rem .75rem; margin-top: .75rem; background: #fff; }
+  .stack tbody tr { border: 1px solid var(--line, #e0d9c6); border-radius: 12px; padding: .5rem .75rem; margin-top: .75rem; background: var(--card-bg, #fff); color: var(--surface-ink, #2a2118); }
   .stack td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 0; box-shadow: none; padding: .3rem 0; text-align: right; background: transparent; }
-  .stack td::before { content: attr(data-label); font-size: .8rem; color: #6b5d4d; font-weight: 600; text-align: left; }
+  .stack td::before { content: attr(data-label); font-size: .8rem; color: var(--surface-muted, #6b5d4d); font-weight: 600; text-align: left; }
   .stack td[data-label=""] { justify-content: flex-end; padding-top: .6rem; }
   .stack td[data-label=""]::before { display: none; }
 }
