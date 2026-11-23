@@ -1,6 +1,12 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = '2.1.1';
+const APP_VERSION = '2.1.2';
 const CHANGELOG = [
+  {
+    version: '2.1.2', date: '22.11.2026', title: 'Korrektur für den Dunkelmodus am Handy',
+    items: [
+      'Listenkarten im Dunkelmodus sind am Handy wieder dunkel und gut lesbar'
+    ]
+  },
   {
     version: '2.1.1', date: '22.11.2026', title: 'Korrekturen',
     items: [
