@@ -1,0 +1,59 @@
+{
+  "id": "./",
+  "name": "Elmcreek Ranch Dashboard",
+  "short_name": "Elmcreek",
+  "description": "Fuhrpark, Aufgaben und Infos der Elmcreek Ranch",
+  "lang": "de",
+  "start_url": "uebersicht.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#18110a",
+  "theme_color": "#18110a",
+  "categories": [
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Aufgaben",
+      "url": "aufgaben.html",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Fuhrpark",
+      "url": "dashboard.html",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

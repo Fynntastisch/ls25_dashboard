@@ -1,6 +1,14 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = '2.1.2';
+const APP_VERSION = '2.2.0';
 const CHANGELOG = [
+  {
+    version: '2.2.0', date: '25.11.2026', title: 'App-Installation',
+    items: [
+      'Das Dashboard lässt sich wie eine App installieren (Button „App installieren“ im Menü und in den Einstellungen)',
+      'Die installierte App startet ohne Adressleiste und bleibt angemeldet, bis du dich abmeldest',
+      'Neue Versionen werden beim Öffnen automatisch geprüft und geladen'
+    ]
+  },
   {
     version: '2.1.2', date: '22.11.2026', title: 'Korrektur für den Dunkelmodus am Handy',
     items: [

@@ -1,8 +1,10 @@
 /* Gemeinsamer Datenzugriff (Supabase) für alle Seiten.
    Seiten rufen init() auf und arbeiten danach mit DATA (users, vehicles, tasks).
    store.save(data) gleicht Änderungen an Fahrzeugen und Aufgaben mit der Datenbank ab. */
-/* Die Anmeldung liegt nur im sessionStorage: Schließt man Tab oder Fenster, ist man automatisch abgemeldet. */
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: window.sessionStorage } });
+/* Im normalen Browser liegt die Anmeldung nur im sessionStorage: Schließt man Tab oder Fenster, ist man abgemeldet.
+   Die installierte App verhält sich wie eine App und bleibt angemeldet, bis man auf "Abmelden" tippt. */
+const IS_APP = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (typeof navigator !== 'undefined' && navigator.standalone === true);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: IS_APP ? window.localStorage : window.sessionStorage } });
 /* Aus einem Namen wie "Max Müller" wird der Login-Name "max.mueller" (klein, ohne Leerzeichen und Umlaute) */
 function loginName(n) {
   return String(n).trim().toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/\s+/g, '.');
