@@ -20,7 +20,9 @@ const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;'
 function topbarHtml(active, title, opts = {}) {
   const who = escapeHtml(dispName(ME.name)) + ' (' + escapeHtml(ME.role) + ')';
   const farm = opts.farmSwitch ? '<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat=\'Alle\';render()"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Farm wechseln</button>' : '';
-  const acts = farm + '<button class="btn btn-sm btn-outline-light" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden <i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>';
+  const showInst = typeof deferredInstall !== 'undefined' && deferredInstall && !IS_APP;
+  const install = '<button class="btn btn-sm btn-outline-light' + (showInst ? '' : ' d-none') + '" data-install onclick="installApp()"><i class="bi bi-download" aria-hidden="true"></i> App installieren</button>';
+  const acts = farm + install + '<button class="btn btn-sm btn-outline-light" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden <i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>';
   return `<nav class="navbar navbar-expand-lg topbar" data-bs-theme="dark" aria-label="Hauptmenü">
   <div class="${opts.fluid ? 'container-fluid px-3 px-lg-4' : 'container'} gap-2">
     <a class="navbar-brand brand" href="uebersicht.html" title="Zur Übersicht"><img class="brand-logo" src="img/logo-nav.png" alt="Elmcreek Ranch, zur Übersicht"></a>

@@ -33,6 +33,14 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 <link rel="stylesheet" href="css/responsive.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="css/theme.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#18110a">
+<link rel="icon" type="image/png" href="img/icons/icon-192.png">
+<link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Elmcreek">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
 <div id="topbar"></div>
@@ -55,6 +63,13 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
     </div>
   </div>
 
+  <div class="panel p-4 mb-4">
+    <h2 class="h5 mb-3"><i class="bi bi-phone" aria-hidden="true"></i> App installieren</h2>
+    <p class="mb-3" id="appInfo">Installiere das Dashboard wie eine App: eigenes Symbol auf dem Startbildschirm und Start ohne Adressleiste.</p>
+    <button class="btn btn-hay d-none" data-install onclick="installApp()"><i class="bi bi-download" aria-hidden="true"></i> App installieren</button>
+    <div class="small text-secondary mt-2" id="appHelp"></div>
+  </div>
+
   <div class="panel p-4">
     <h2 class="h5 mb-3"><i class="bi bi-shield-lock" aria-hidden="true"></i> Konto</h2>
     <div id="acct"></div>
@@ -68,6 +83,7 @@ body{background:linear-gradient(rgba(243,239,228,.9),rgba(243,239,228,.9)),url(i
 <script src="js/data.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/version.js"></script>
+<script src="js/pwa.js"></script>
 <script>
 let data,me,pending=null;   /* pending = neues, noch nicht gespeichertes Profilbild */
 const $=id=>document.getElementById(id);
@@ -132,6 +148,16 @@ document.querySelectorAll('input[name=theme]').forEach(r=>r.addEventListener('ch
   else showToast('Darstellung gespeichert.');
 }));
 
+/* ---------- App installieren ---------- */
+function renderAppHelp(){
+  if(IS_APP){$('appInfo').textContent='Du nutzt gerade die installierte App.';return}
+  const ua=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),android=/Android/.test(ua);
+  toggleInstall(!!deferredInstall);
+  $('appHelp').textContent=deferredInstall?'':ios?'iPhone/iPad: Öffne die Seite in Safari, tippe auf das Teilen-Symbol (Quadrat mit Pfeil) und wähle „Zum Home-Bildschirm“.'
+    :android?'Android: Tippe im Browser-Menü (drei Punkte) auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.'
+    :'PC: In Chrome oder Edge erscheint in der Adressleiste ein Installieren-Symbol, alternativ im Browser-Menü „App installieren“.';
+}
+
 /* Platzhalter, bis die Daten da sind */
 $('topbar').innerHTML=skel.topbar();
 $('avatarBox').innerHTML='<div class="placeholder-glow d-flex align-items-center gap-3" role="status"><span class="visually-hidden">Wird geladen …</span><span class="placeholder rounded-circle" style="width:96px;height:96px"></span><span class="placeholder" style="width:180px;height:2.4rem"></span></div>';
@@ -141,7 +167,7 @@ init().then(()=>{
   data=DATA;me=ME;
   $('topbar').outerHTML=topbarHtml('','Einstellungen',{fluid:false});
   document.querySelector('input[name=theme][value='+(me.theme==='dark'?'dark':'light')+']').checked=true;
-  renderAvatar();
+  renderAvatar();renderAppHelp();
   $('acct').innerHTML=`<dl class="row mb-0">
     <dt class="col-sm-4">Name</dt><dd class="col-sm-8">${esc(me.display||me.name)}</dd>
     <dt class="col-sm-4">Login-Name</dt><dd class="col-sm-8">${esc(me.name)}</dd>
