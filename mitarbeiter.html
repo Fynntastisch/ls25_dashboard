@@ -199,7 +199,8 @@ async function saveUser(e){e.preventDefault();
 async function delUser(id){
   const u=data.users.find(x=>x.id===id);
   if(u.role==='chef'&&u.active&&activeChefs()===1) return alert('Der letzte Chef kann nicht gelöscht werden.');
-  if(!confirm(`Account „${u.display||u.name}“ wirklich löschen? Seine Aufgaben werden auf „Nicht zugewiesen“ gesetzt.`)) return;
+  if(!confirm(`Account „${u.display||u.name}“ wirklich löschen? Er wird aus allen Aufgaben entfernt, ein Profilbild wird mitgelöscht.`)) return;
+  if(u.avatar_v){const rmv=await sb.storage.from('avatars').remove([id+'/avatar.jpg']);if(rmv.error)showToast('Das Profilbild konnte nicht gelöscht werden: '+rmv.error.message,'warning')}
   const {error}=await sb.rpc('delete_user',{uid:id});
   if(error) return alert('Löschen fehlgeschlagen: '+error.message);
   data.users=data.users.filter(x=>x.id!==id);

@@ -75,3 +75,5 @@ body {
 
 /* Sehr niedrige Bildschirme (z. B. Handy quer): kein Platz für das Logo */
 @media (max-height: 520px) { .login-logo { display: none; } }
+
+.hint a { color: #fff; text-decoration: underline; }

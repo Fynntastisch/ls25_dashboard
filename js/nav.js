@@ -3,36 +3,40 @@ function navLinks(active) {
   if (!ME) return '';
   const today = new Date().toLocaleDateString('sv');
   const late = DATA.tasks.filter(t => t.due && t.due < today && t.status !== 'Erledigt' && (ME.role === 'chef' || (t.assignees || []).includes(ME.name))).length;
+  const link = ([h, n, k, i]) =>
+    `<a class="navi${k === active ? ' active' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}><i class="bi bi-${i}" aria-hidden="true"></i><span>${n}</span>${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`;
   const items = [['uebersicht.html', 'Übersicht', 'uebersicht', 'house-door']];
   if (can('vehicles', 'view')) items.push(['dashboard.html', 'Fuhrpark', 'fuhrpark', 'truck']);
   if (can('tasks', 'view')) items.push(['aufgaben.html', 'Aufgaben', 'aufgaben', 'clipboard-check']);
   if (can('posts', 'view')) items.push(['infos.html', 'Infos', 'infos', 'info-circle']);
+  let html = items.map(link).join('');
   if (ME.role === 'chef' || ME.role === 'dev') {
-    items.push(['mitarbeiter.html', 'Mitarbeiter', 'mitarbeiter', 'people']);
-    items.push(['logs.html', 'Protokoll', 'logs', 'journal-text']);
+    const adm = [['mitarbeiter.html', 'Mitarbeiter', 'mitarbeiter', 'people'], ['logs.html', 'Protokoll', 'logs', 'journal-text'], ['status.html', 'Status', 'status', 'activity']];
+    const on = adm.some(x => x[2] === active);
+    html += `<div class="dropdown navi-group"><a class="navi dropdown-toggle${on ? ' active' : ''}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-shield-check" aria-hidden="true"></i><span>Verwaltung</span></a><ul class="dropdown-menu dropdown-menu-dark">${adm.map(([h, n, k, i]) => `<li><a class="dropdown-item${k === active ? ' active' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}><i class="bi bi-${i} me-2" aria-hidden="true"></i>${n}</a></li>`).join('')}</ul></div>`;
   }
-  return items.map(([h, n, k, i]) =>
-    `<a class="navi${k === active ? ' active' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}><i class="bi bi-${i}" aria-hidden="true"></i><span>${n}</span>${k === 'aufgaben' && late ? ` <span class="badge text-bg-danger" title="Überfällige Aufgaben">${late}</span>` : ''}</a>`).join('');
+  return html;
 }
 
-/* Obere Leiste (Bootstrap-Navbar): am PC alles in einer Zeile, auf Handy und Tablet Hamburger-Button mit aufklappbarem Menü */
+/* Obere Leiste (Bootstrap-Navbar): ab 1200 px alles in einer Zeile, darunter Hamburger-Button mit aufklappbarem Menü */
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function topbarHtml(active, title, opts = {}) {
   const who = escapeHtml(dispName(ME.name)) + ' (' + escapeHtml(ME.role) + ')';
   const farm = opts.farmSwitch ? '<button class="btn btn-sm btn-outline-light" onclick="S.farm=null;S.cat=\'Alle\';render()"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Farm wechseln</button>' : '';
   const showInst = typeof deferredInstall !== 'undefined' && deferredInstall && !IS_APP;
   const install = '<button class="btn btn-sm btn-outline-light' + (showInst ? '' : ' d-none') + '" data-install onclick="installApp()"><i class="bi bi-download" aria-hidden="true"></i> App installieren</button>';
-  const acts = farm + install + '<button class="btn btn-sm btn-outline-light" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort</button><button class="btn btn-sm btn-hay" onclick="logout()">Abmelden <i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>';
-  return `<nav class="navbar navbar-expand-lg topbar" data-bs-theme="dark" aria-label="Hauptmenü">
-  <div class="${opts.fluid ? 'container-fluid px-3 px-lg-4' : 'container'} gap-2">
+  const pw = '<button class="btn btn-sm btn-outline-light" onclick="openPw()"><i class="bi bi-key" aria-hidden="true"></i> Passwort</button>';
+  const out = '<button class="btn btn-sm btn-hay" onclick="logout()">Abmelden <i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>';
+  return `<nav class="navbar navbar-expand-xl topbar" data-bs-theme="dark" aria-label="Hauptmenü">
+  <div class="${opts.fluid ? 'container-fluid px-3 px-xl-4' : 'container'} gap-2">
     <a class="navbar-brand brand" href="uebersicht.html" title="Zur Übersicht"><img class="brand-logo" src="img/logo-nav.png" alt="Elmcreek Ranch, zur Übersicht"></a>
     <button class="navbar-toggler order-2" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Menü öffnen oder schließen"><span class="navbar-toggler-icon"></span></button>
-    <div class="collapse navbar-collapse order-3 order-lg-0" id="navMenu">
-      <div class="navl d-flex flex-column flex-lg-row me-lg-auto py-2 py-lg-0">${navLinks(active)}</div>
-      <div class="menu-actions d-lg-none vstack gap-2 pt-2 border-top border-secondary">${acts}</div>
+    <div class="collapse navbar-collapse order-3 order-xl-0" id="navMenu">
+      <div class="navl d-flex flex-column flex-xl-row me-xl-auto py-2 py-xl-0">${navLinks(active)}</div>
+      <div class="menu-actions d-xl-none vstack gap-2 pt-2 border-top border-secondary">${farm}${install}${pw}${out}</div>
     </div>
-    <a class="who small order-1 order-lg-0 ms-auto ms-lg-0" href="einstellungen.html" title="Einstellungen und Profilbild">${avatarHtml(ME, 28)} <span>${who}</span></a>
-    <div class="d-none d-lg-flex align-items-center gap-2">${acts}</div>
+    <a class="who small order-1 order-xl-0 ms-auto ms-xl-0" href="einstellungen.html" title="Einstellungen und Profilbild">${avatarHtml(ME, 28)} <span>${who}</span></a>
+    <div class="d-none d-xl-flex align-items-center gap-2">${farm}${pw}${out}</div>
   </div>
 </nav>`;
 }

@@ -7,3 +7,7 @@ const SUPABASE_KEY = 'sb_publishable_TVCzNjrMm_gmr100VhcHMQ_qEUkPDO-';
 /* Interne Endung für die Login-Adressen: aus dem Benutzernamen "anna" wird "anna@ls25.app".
    Es werden nie E-Mails dorthin geschickt. */
 const EMAIL_DOMAIN = 'ls25.app';
+
+/* Kontingent deines Supabase-Tarifs (Free). Nur für die Anzeige auf der Status-Seite.
+   Bei einem anderen Tarif hier die Werte anpassen. */
+const PLAN = { name: 'Free', dbMB: 500, storageMB: 1024 };

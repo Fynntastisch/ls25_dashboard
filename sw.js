@@ -3,7 +3,7 @@
    Nur wenn das Netz fehlt, kommen die Dateien aus dem Zwischenspeicher. Daten von Supabase und
    fremde Server (Bootstrap, Schriften) werden nie angefasst. */
 const CACHE = 'ls25-app-v1';
-const SHELL = ["./", "aufgaben.html", "dashboard.html", "einstellungen.html", "index.html", "infos.html", "logs.html", "mitarbeiter.html", "uebersicht.html", "updatelogs.html", "css/responsive.css", "css/styles.css", "css/theme.css", "js/config.js", "js/data.js", "js/nav.js", "js/script.js", "js/theme-init.js", "js/version.js", "img/logo-nav.png", "img/logo-login.png", "manifest.webmanifest", "img/icons/apple-touch-icon.png", "img/icons/icon-192.png", "img/icons/icon-512.png", "img/icons/icon-maskable-512.png"];
+const SHELL = ["./", "aufgaben.html", "dashboard.html", "datenschutz.html", "einstellungen.html", "index.html", "infos.html", "logs.html", "mitarbeiter.html", "status.html", "uebersicht.html", "updatelogs.html", "css/responsive.css", "css/styles.css", "css/theme.css", "js/config.js", "js/data.js", "js/nav.js", "js/pwa.js", "js/script.js", "js/theme-init.js", "js/version.js", "img/logo-nav.png", "img/logo-login.png", "manifest.webmanifest", "img/icons/apple-touch-icon.png", "img/icons/icon-192.png", "img/icons/icon-512.png", "img/icons/icon-maskable-512.png"];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

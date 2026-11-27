@@ -1,6 +1,15 @@
 /* Version und Update-Hinweise. Bei jedem Update hier oben einen Eintrag ergänzen und APP_VERSION anpassen. */
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.3.0';
 const CHANGELOG = [
+  {
+    version: '2.3.0', date: '25.11.2026', title: 'Datenschutz und Datenbank-Status',
+    items: [
+      'Neue Datenschutzerklärung, erreichbar über die Einstellungen und die Login-Seite',
+      'Neue Status-Seite für Developer und Chef: Datenbank online, Speicherplatz, Auslastung und Tabellen im Überblick',
+      'Beim Löschen eines Accounts wird auch dessen Profilbild gelöscht',
+      'Das Menü fasst Mitarbeiter, Protokoll und Status unter „Verwaltung“ zusammen'
+    ]
+  },
   {
     version: '2.2.0', date: '25.11.2026', title: 'App-Installation',
     items: [
